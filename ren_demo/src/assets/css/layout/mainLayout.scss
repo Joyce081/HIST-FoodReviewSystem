@@ -1,0 +1,242 @@
+$base-padding: 0 15px;
+$page-height: 100vh;
+
+.container {
+	min-height: $page-height;
+}
+.aside {
+	min-height: $page-height;
+	background-color: var(--aside-bg-color,#011F4A);
+	transition: all 0.3s ease-in-out;
+	position: relative;
+	.aside-header{
+		width: 100%;
+	}
+	/* 如果菜单需要滚动，仅在内容溢出时显示滚动条 */
+	.custom-menu {
+		overflow-y: auto; /* 将滚动条转移到菜单内部 */
+		border: none;
+		z-index: 2;
+		.el-sub-menu__title{
+			color: var(--menu-color,#ffffff) !important;
+		}
+		/* 未选中菜单项 */
+		.el-menu-item {
+			color: var(--menu-color,#ffffff) !important; /* 替换为你需要的颜色 */
+		}
+		/* 菜单鼠标悬停时的样式 */
+		.el-menu-item:hover {
+			background-color: var(--menu-hover-bg-color,rgba(24, 144, 255, 0.08)) !important;
+		}
+		/* 已选中菜单项 */
+		.el-menu-item.is-active {
+			color: var(--menu-active-color,#1890ff) !important;
+			background: var(--menu-active-bg-color,linear-gradient(-90deg, #06396e, #022953)) !important;
+			position: relative;
+			&:before {
+        display: block;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 8px;
+        background: var(--menu-active-before-bg-color,rgba(24, 144, 255, 0.2));
+      }
+		}
+	}
+	.sidebar-bg{
+		position: fixed;
+    bottom: 0;
+    left: 0;
+    width: var(--width);
+    height: 281px;
+    z-index: 1;
+	}
+	// 在SCSS中添加以下样式
+	.sidebar-bg {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		width: 64px; /* 侧边栏收起时的宽度 */
+		height: 281px;
+		z-index: 1;
+		opacity: 0; /* 设置图片为透明 */
+		/* 当CSS属性opacity（透明度）发生变化时触发过渡动画（0.3秒，缓入缓出），当CSS属性width（宽度）发生变化时触发过渡动画（0.3秒，缓入缓出） */
+		/* 只有当检测到指定的 CSS 属性（这里是 opacity 和 width）发生变化时，才会触发过渡动画。如果这些属性值保持不变，就不会有任何过渡效果 */
+		transition: opacity 0.3s ease-in-out, width 0.3s ease-in-out;
+		pointer-events: none; /* 使图片忽略鼠标事件 */
+		object-fit: cover; /* 保持图片比例，同时覆盖整个容器 */
+		object-position: bottom; /*将图片底部对齐容器*/
+	}
+
+	.sidebar-bg-visible {
+		width: 245px; /* 侧边栏展开时的宽度 */
+		opacity: 1; /* 显示时完全不透明 */
+	}
+}
+
+.container-header {
+	padding: 0;
+	font-size: 12px;
+	height: auto;
+
+	.header-one {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		height: 50px;
+		border-bottom: 1px solid var(--header-one-border-color,#e8e8e8);
+		background-color: var(--header-one-bg-color,#ffffff);
+		box-shadow: 0 1px 4px var(--header-one-box-shadow-color,rgba(0, 0, 0, 0.05));
+		.one-left {
+			display: flex;
+			align-items: center;
+			height: 100%;
+			.iconClass-collapse {
+				display: flex;
+				align-items: center;
+				height: 100%;
+				padding: $base-padding;
+				transition: all 0.3s ease;
+			}
+
+			.iconClass-collapse:hover {
+				background-color: var(--icon-collapse-bg-color,#f5f7fa);
+			}
+		}
+
+		.one-right {
+			display: flex;
+			align-items: center;
+			height: 100%;
+			.iconClass-setting {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+				margin: $base-padding;
+				color: var(--icon-setting-color,#606266);
+				transition: all 0.3s ease;
+				cursor: pointer;
+				outline: none !important;
+				border: none !important;
+			}
+
+			.iconClass-setting:hover {
+				color: var(--icon-setting-hover-color,#409eff);
+				border: none;
+			}
+
+		}
+	}
+
+	.header-two {
+		display: flex;
+		align-items: center;
+		padding: 6px 10px; /* 减少内边距来降低高度 */
+		background-color: var(--header-two-bg-color,#f8f9fa);
+		border-bottom: 1px solid var(--header-two-border-color,#e8e8e8);
+		min-height: 36px; /* 减少最小高度 */
+		flex-wrap: wrap;
+		gap: 8px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 添加轻微的下投影 */
+		position: relative; /* 确保阴影显示在正确位置 */
+		z-index: 1; /* 确保阴影不会被下方内容覆盖 */
+		.el-tag {
+			cursor: pointer;
+			transition: all 0.2s ease;
+			border-radius: 4px;
+			font-weight: 500;
+			font-size: 14px; /* 稍微减小字体大小以匹配新高度 */
+			padding: 8px 10px; /* 调整标签内边距 */
+			height: auto; /* 确保高度自适应 */
+			line-height: 1.4; /* 调整行高 */
+			border: none !important;
+		}
+
+		.el-tag:hover {
+			transform: translateY(-1px);
+		}
+
+		/* 活动标签样式 */
+		.el-tag--primary {
+			background-color: var(--tag-primary-bg-color,#ecf5ff);
+			color: var(--tag-primary-color,#409eff);
+		}
+
+		/* 其他标签样式 */
+		.el-tag:not(.el-tag--primary) {
+			background-color: var(--tag-other-bg-color,#f4f4f5);
+			color: var(--tag-other-color,#909399);
+		}
+	}
+}
+
+// 主题设置抽屉
+.theme-setting-drawer .el-drawer__body{
+	padding: 0 20px !important;
+
+	.setting-title {
+		font-size: 16px;
+		font-weight: 600;
+		margin-bottom: 15px;
+		color: var(--theme-setting-color,#606266);
+		border-bottom: 1px solid var(--theme-setting-title-border-color,#ebeef5);
+		padding-bottom: 10px;
+	}
+
+	.theme-option {
+		display: flex;
+		align-items: center;
+		margin-bottom: 10px;
+		padding: 8px;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+		.theme-name {
+			color: var(--theme-setting-color,#606266);
+			font-size: 14px;
+		}
+	}
+
+	.theme-option:hover {
+		background-color: var(--theme-setting-option-hover-bg-color,#f5f7fa);
+	}
+
+	.theme-active {
+		position: relative;
+	}
+
+	.theme-active::after {
+		content: "✓";
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		color: var(--theme-setting-active-color,#409eff);
+		font-weight: bold;
+	}
+
+	.setting-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 20px;
+		padding: 10px 0;
+		.setting-label {
+			font-size: 14px;
+			color: var(--theme-setting-color,#606266);
+		}
+	}
+
+}
+
+.ai-help {
+	position: fixed;
+	bottom: 25px;
+	right: 15px;
+	width: 80px;
+	height: 80px;
+	cursor: pointer;
+}

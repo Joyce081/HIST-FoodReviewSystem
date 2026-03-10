@@ -1,0 +1,52 @@
+#设置应用的根路径，如果不设置，访问路径为http://localhost:8080/，设置了之后，路径变为http://localhost:8080/demo/
+#server:
+#  servlet:
+#    context-path: /demo
+
+spring:
+  profiles:
+    # 当前项目启动激活的环境是dev(开发环境)
+    active: dev
+  config:
+    #	通过spring.config.import导入其他配置文件
+    import:
+      - "classpath:/config/security/spring-security.yml"  # 导入/security目录下的 spring-security.yml
+      - "classpath:/config/redis/redis.yml"  # 导入/redis目录下的 redis.yml
+      - "classpath:/config/database/mybatis-plus.yml"  # 导入/mybatis目录下的 mybatis-plus.yml
+      - "classpath:/config/mail/mail.yml"  # 导入mail目录下的 mail.yml
+      - "classpath:/config/thymeleaf/thymeleaf.yml"  # 导入/thymeleaf目录下的 thymeleaf.yml
+
+#配置日志级别，根目录为INFO，com.ren目录为DEBUG
+logging:
+  level:
+    root: INFO
+    com.ren: DEBUG
+    org.apache.ibatis: DEBUG  #设置MyBatis框架的日志级别为DEBUG,显示SQL语句、参数绑定、结果集映射等数据库操作细节
+  file:
+    name: logs/ren.log  # 指定文件名（自动创建），相对路径，相对于项目根目录生成文件（如项目在D:\project，则路径为D:\project\logs\app.log）
+
+
+--- #多套配置模式，---表示多文档模式（这里展示的多套配置环境全部写在application.yml中，也可以放在多文件中，配置文件命名格式需要保证application-xxx.yml的格式，当激活对应的环境时，SpringBoot会自动引入）
+spring:
+  config:
+    import:
+      - "classpath:/config/database/jdbc-dev.yml"  # 导入/jdbc目录下的 jdbc-dev.yml
+      - "classpath:/config/swagger/swagger-dev.yml"  # 导入/swagger目录下的 swagger-dev.yml
+      - "classpath:/config/project/project-dev.yml"  # 导入/project目录下的 project-dev.yml
+    activate:
+      on-profile: dev # 当环境启动时激活的环境是dev时，当前配置生效
+
+---
+spring:
+  config:
+    import:
+      - "classpath:/config/database/jdbc-prod.yml"  # 导入/jdbc目录下的 jdbc-prod.yml
+      - "classpath:/config/swagger/swagger-prod.yml"  # 导入/swagger目录下的 swagger-prod.yml
+      - "classpath:/config/project/project-prod.yml"  # 导入/project目录下的 project-dev.yml
+    activate:
+      on-profile: prod # 当环境启动时激活的环境是prod时，当前配置生效
+
+# 在文件末尾添加
+ren:
+  cloud-storage:
+    enabled: false  # 禁用云存储模块

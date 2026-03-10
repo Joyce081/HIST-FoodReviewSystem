@@ -1,0 +1,8 @@
+/* 移除所有 router-link 的默认样式 */
+.router-link-active,
+.router-link-exact-active,
+.router-link {
+	text-decoration: none; /* 移除下划线 */
+	color: inherit; /* 继承父级颜色（覆盖默认蓝色） */
+	cursor: pointer;
+}

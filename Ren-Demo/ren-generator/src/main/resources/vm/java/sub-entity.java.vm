@@ -1,0 +1,47 @@
+package ${packageName}.core.domain.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+import com.ren.common.core.domain.entity.BaseEntity;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+#foreach ($import in $subImportList)
+import ${import};
+#end
+
+/**
+ * ${subTable.functionName}对象 ${subTableName}
+ *
+ * @author ${author}
+ * @date ${datetime}
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@TableName("${subTableName}")
+public class ${subClassName} extends BaseEntity {
+	private static final long serialVersionUID = 1L;
+
+    #foreach($column in $subTable.columns)
+    #if($column.isPk())
+	/** $column.columnComment */
+	@TableId(value = "$column.columnName", type = IdType.AUTO)
+	@Schema(description = "${column.columnComment}(添加时为空)")
+	private $column.javaType $column.javaField;
+	#elseif(($column.usableColumn) || (!$column.superColumn))
+	/** $column.columnComment */
+	@TableField(value = "$column.columnName")
+	@Schema(description = "${column.columnComment}")
+	private $column.javaType $column.javaField;
+    #end
+    #end
+
+}

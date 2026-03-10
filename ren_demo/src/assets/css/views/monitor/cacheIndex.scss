@@ -1,0 +1,65 @@
+.redis-monitor-container {
+	margin: 20px auto;
+	padding: 15px;
+
+	.card-title {
+		font-size: 18px;
+		font-weight: bold;
+		margin-bottom: 15px;
+		color: var(--cache-index-card-title-color,#333);
+	}
+
+	.info-card {
+		margin-bottom: 20px;
+		box-shadow: 0 2px 12px 0 var(--cache-index-box-shadow-color,rgba(0, 0, 0, 0.1));
+
+		.info-grid {
+			display: flex;
+			flex-direction: column;
+
+			.grid-row {
+				display: flex;
+				border-bottom: 1px solid var(--cache-index-grid-row-border-bottom,#ebeef5);
+				padding: 12px 0;
+
+				&:last-child {
+					border-bottom: none;
+				}
+
+				.label {
+					flex: 0 0 150px;
+					font-weight: bold;
+					color: var(--cache-index-label-color,#606266);
+					padding: 0 10px;
+				}
+
+				.value {
+					flex: 1;
+					font-weight: normal;
+					padding: 0 10px;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+			}
+		}
+	}
+
+	.charts-container {
+		display: flex;
+		gap: 20px;
+
+		@media (max-width: 768px) {
+			flex-direction: column;
+		}
+
+		.chart-card {
+			flex: 1;
+			box-shadow: 0 2px 12px 0 var(--cache-index-box-shadow-color,rgba(0, 0, 0, 0.1));
+
+			.chart {
+				width: 100%;
+			}
+		}
+	}
+}

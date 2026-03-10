@@ -1,0 +1,8 @@
+//导入部分文件（在 Sass/SCSS 中，以 _ 开头的文件称为"部分文件"）
+//在导入时，可以省略：开头的下划线_、文件扩展名 .scss 或 .sass
+@use './base/base.scss' as *;
+@use './base/a.scss' as *;
+@use './base/elmenu.scss' as *;
+@use './base/router.scss' as *;
+@use './base/predefine.scss' as *;
+@use './base/button.scss' as *;

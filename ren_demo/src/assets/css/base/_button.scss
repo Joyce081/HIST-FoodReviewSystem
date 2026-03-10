@@ -1,0 +1,78 @@
+@use './_variables.scss' as *;
+@use "sass:color";
+@use "sass:math";
+
+@mixin colorBtn($color, $text-color: null) {
+  $text: if($text-color, $text-color, getContrastColor($color));
+
+  background: $color !important;
+  color: $text !important;
+
+  &:hover {
+    background: color.adjust($color, $lightness: 5%) !important;
+    color: $text !important;
+
+    &:before,
+    &:after {
+      background: $text !important;
+    }
+  }
+}
+
+// 辅助函数：根据背景色计算合适的文字颜色
+@function getContrastColor($color) {
+  $r: color.channel($color, "red", $space: rgb);
+  $g: color.channel($color, "green", $space: rgb);
+  $b: color.channel($color, "blue", $space: rgb);
+
+  // 计算亮度 (YIQ公式)
+  $yiq: math.div(($r * 299) + ($g * 587) + ($b * 114), 1000);
+
+  @if ($yiq >= 150) {
+    @return #000; // 浅色背景用深色文字
+  } @else {
+    @return #fff; // 深色背景用浅色文字
+  }
+}
+
+// 按钮样式
+.blue-btn {
+  @include colorBtn($blue);
+}
+
+.light-blue-btn {
+  @include colorBtn($light-blue);
+}
+
+.red-btn {
+  @include colorBtn($red);
+}
+
+.pink-btn {
+  @include colorBtn($pink);
+}
+
+.green-btn {
+  @include colorBtn($green);
+}
+
+.tiffany-btn {
+  @include colorBtn($tiffany);
+}
+
+.yellow-btn {
+  // 黄色背景需要深色文字
+  @include colorBtn($yellow, #000);
+}
+
+.pan-green-btn {
+  @include colorBtn($panGreen);
+}
+
+.pan-blue-btn {
+  @include colorBtn($panBlue);
+}
+
+.pan-gray-btn {
+  @include colorBtn($panGray);
+}

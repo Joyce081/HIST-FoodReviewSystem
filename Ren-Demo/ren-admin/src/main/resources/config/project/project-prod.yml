@@ -1,0 +1,16 @@
+token:
+  secret: spyVAlmCKL7NMJW2frntYVJUyQeyFzVtdlDHEYSIqWHp4H/wKpqVz2SNPjaE2WS7XhMcY37/vVc0IGYvebKN+w==  #accessToken加密密钥
+  refresh-secret: MTCQ+jVSkyboQedcU5rWAnztQMOLPWAtLwZXmhVkfqnvQMQw69NDfNuP4Awx628Z4ET/idHdSnkTyMdJxD7Auw==   #refreshToken加密密钥
+  access-token-expire-time: 1800      # accessToken有效时长30分钟
+  access-token-refresh-time: 300       # accessToken剩余5分钟时触发刷新
+  refresh-tiken-expire-time: 28800  # refreshToken有效时长8小时
+  test-access-token-expire-time: 0   # swagger测试accessToken有效时长0小时--生产环境
+  black-list-time: 300    # accessToken加入黑名单后，黑名单持续时间
+  is-open-single-device-login: 1    # 是否开启单设备登录（1：开启 0：关闭）
+
+localstorage:
+  # 文件路径 示例（ Windows配置C:/ren/uploadPath，Linux配置 /home/ren/uploadPath）
+  profile: C:/ren/uploadPath
+
+url:
+  front: http://localhost:5173

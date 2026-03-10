@@ -1,0 +1,314 @@
+package ${packageName}.service.impl;
+
+import java.util.List;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+#if($table.crud || $table.sub)
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.ren.common.utils.PageUtils;
+#end
+#foreach($column in $columns)
+#if($column.javaField == 'createTime' || $column.javaField == 'updateTime')
+import com.ren.common.utils.DateUtils;
+#break
+#end
+#end
+import ${packageName}.mapper.${ClassName}Mapper;
+import ${packageName}.core.domain.entity.${ClassName};
+import ${packageName}.service.${ClassName}Service;
+#if($table.sub)
+import ${packageName}.mapper.${subClassName}Mapper;
+import ${packageName}.core.domain.entity.${subClassName};
+#end
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * ${functionName}Service业务层处理
+ * 
+ * @author ${author}
+ * @date ${datetime}
+ */
+@Service
+public class ${ClassName}ServiceImpl extends ServiceImpl<${ClassName}Mapper, ${ClassName}> implements ${ClassName}Service
+{
+    @Autowired
+    private ${ClassName}Mapper ${className}Mapper;
+	#if($table.sub)
+    @Autowired
+    private ${subClassName}Mapper ${subclassName}Mapper;
+	#end
+	/**
+	 * 添加${functionName}
+	 *
+	 * @param ${className} ${functionName}
+	 * @return 添加结果主键
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public ${pkColumn.javaType} add${ClassName}(${ClassName} ${className},String createBy)
+	{
+        #foreach($column in $columns)
+        #if($column.javaField == 'createTime')
+        ${className}.setCreateTime(DateUtils.currentSeconds());
+        ${className}.setCreateBy(createBy);
+        #end
+        #end
+        ${className}Mapper.insert${ClassName}(${className});
+        return ${className}.get${pkColumn.capJavaField}();
+	}
+
+	/**
+	 * 批量删除${functionName}
+	 *
+	 * @param ${pkColumn.javaField}s 需要删除的${functionName}主键
+	 * @return 成功删除数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public int remove${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s)
+	{
+		int result = ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s);
+		#if($table.sub)
+		remove${subClassName}By${subTableFkColumn.capJavaField}s(${pkColumn.javaField}s);
+		#end
+		return result;
+	}
+
+	/**
+	 * 编辑${functionName}
+	 *
+	 * @param ${className} ${functionName}
+	 * @return 成功编辑数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public int modify${ClassName}(${ClassName} ${className},String updateBy)
+	{
+        #foreach($column in $columns)
+        #if($column.javaField == 'updateTime')
+        ${className}.setUpdateTime(DateUtils.currentSeconds());
+        ${className}.setUpdateBy(updateBy);
+        #end
+        #end
+		return ${className}Mapper.update${ClassName}(${className});
+	}
+
+    /**
+     * ${functionName}详情
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return ${functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    @Override
+    public ${ClassName} get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField})
+    {
+        return ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
+    }
+
+	/**
+	 * 获取${functionName}列表
+	 *
+	 * @param ${className} ${functionName}
+	 * @return ${functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public List<${ClassName}> list${ClassName}ByParam(${ClassName} ${className})
+	{
+		return ${className}Mapper.list${ClassName}ByParam(${className});
+	}
+
+    #if($table.crud || $table.sub)
+    /**
+     * 获取${functionName}分页列表
+     *
+     * @param ${className} ${functionName}
+     * @return ${functionName}分页集合
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+	@Override
+	public IPage<${ClassName}> list${ClassName}ByPage(${ClassName} ${className}){
+		IPage<${ClassName}> ${className}List = ${className}Mapper.list${ClassName}ByPage(PageUtils.createPage(${ClassName}.class),${className});
+		return ${className}List;
+    }
+	#elseif($table.tree)
+	/**
+	 * 获取主键数组获取所有子级列表
+	 *
+	 * @param ${pkColumn.javaField}s 主键数组
+	 * @return 子级集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public List<${ClassName}> listSub${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s)
+	{
+		return ${className}Mapper.listSub${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s);
+	}
+    #end
+
+	#if($table.sub)
+	/**
+	 * ${functionName}详情（包含子项）
+	 *
+	 * @param ${pkColumn.javaField} ${functionName}主键
+	 * @return ${functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public ${ClassName} get${ClassName}IncludeSubBy${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField}){
+		return ${className}Mapper.select${ClassName}IncludeSubBy${pkColumn.capJavaField}(${pkColumn.javaField});
+	}
+
+	/**
+	 * 获取${functionName}列表（包含子项）
+	 *
+	 * @param ${className} ${functionName}
+	 * @return ${functionName}集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public List<${ClassName}> list${ClassName}IncludeSubByParam(${ClassName} ${className}){
+		return ${className}Mapper.list${ClassName}IncludeSubByParam(${className});
+	}
+
+	/*==============================================${subTable.functionName}==========================================*/
+
+	/**
+	 * 批量添加${subTable.functionName}
+	 *
+	 * @param ${subclassName}List ${subTable.functionName}列表
+	 * @return 成功添加数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public int batchAdd${subClassName}(List<${subClassName}> ${subclassName}List,String createBy){
+		#foreach($column in $subTable.columns)
+		#if($column.javaField == 'createTime')
+		for(${subClassName} ${subclassName} : ${subclassName}List){
+			${subclassName}.setCreateTime(DateUtils.currentSeconds());
+			${subclassName}.setCreateBy(createBy);
+		}
+		#end
+		#end
+		return ${subclassName}Mapper.batchInsert${subClassName}(${subclassName}List);
+	}
+
+	/**
+	 * 添加${subTable.functionName}
+	 *
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return 添加结果主键
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public ${subTableFkColumn.javaType} add${subClassName}(${subClassName} ${subclassName},String createBy){
+		#foreach($column in $subTable.columns)
+		#if($column.javaField == 'createTime')
+		${subclassName}.setCreateTime(DateUtils.currentSeconds());
+		${subclassName}.setCreateBy(createBy);
+		#end
+		#end
+		${subclassName}Mapper.insert${subClassName}(${subclassName});
+		return ${subclassName}.get${subTablePkColumn.capJavaField}();
+	}
+
+	/**
+	 * 批量删除${subTable.functionName}
+	 *
+	 * @param ${subTableFkColumn.javaField}s 需要删除的数据外键集合
+	 * @return 成功删除数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public int remove${subClassName}By${subTableFkColumn.capJavaField}s(${subTableFkColumn.javaType}[] ${subTableFkColumn.javaField}s){
+		return ${subclassName}Mapper.delete${subClassName}By${subTableFkColumn.capJavaField}s(${subTableFkColumn.javaField}s);
+	}
+
+	/**
+	 * 批量删除${subTable.functionName}
+	 *
+	 * @param ${subTablePkColumn.javaField}s 需要删除的数据主键集合
+	 * @return 成功删除数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public int remove${subClassName}By${subTablePkColumn.capJavaField}s(${subTablePkColumn.javaType}[] ${subTablePkColumn.javaField}s){
+		return ${subclassName}Mapper.delete${subClassName}By${subTablePkColumn.capJavaField}s(${subTablePkColumn.javaField}s);
+	}
+
+	/**
+	 * 编辑${subTable.functionName}
+	 *
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return 成功编辑数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public int modify${subClassName}(${subClassName} ${subclassName},String updateBy){
+		#foreach($column in $subTable.columns)
+		#if($column.javaField == 'updateTime')
+		${subclassName}.setUpdateTime(DateUtils.currentSeconds());
+		${subclassName}.setUpdateBy(updateBy);
+		#end
+		#end
+		return ${subclassName}Mapper.update${subClassName}(${subclassName});
+	}
+
+	/**
+	 * ${subTable.functionName}详情
+	 *
+	 * @param ${subTablePkColumn.javaField} ${subTable.functionName}主键
+	 * @return ${subTable.functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public ${subClassName} get${subClassName}By${subTablePkColumn.capJavaField}(${subTablePkColumn.javaType} ${subTablePkColumn.javaField}){
+		return ${subclassName}Mapper.select${subClassName}By${subTablePkColumn.capJavaField}(${subTablePkColumn.javaField});
+	}
+
+	/**
+	 * 获取${subTable.functionName}分页列表
+	 *
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return ${subTable.functionName}分页集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public IPage<${subClassName}> list${subClassName}ByPage(${subClassName} ${subclassName}){
+		IPage<${subClassName}> ${subclassName}List = ${subclassName}Mapper.list${subClassName}ByPage(PageUtils.createPage(${subClassName}.class),${subclassName});
+		return ${subclassName}List;
+	}
+
+	/**
+	 * 获取${subTable.functionName}列表
+	 *
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return ${subTable.functionName}集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@Override
+	public List<${subClassName}> list${subClassName}ByParam(${subClassName} ${subclassName}){
+		return ${subclassName}Mapper.list${subClassName}ByParam(${subclassName});
+	}
+	#end
+
+}

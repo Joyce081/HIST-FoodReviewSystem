@@ -1,0 +1,339 @@
+package ${packageName}.controller;
+
+#if(${table.tree})
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+#end
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+#if(${table.crud} || ${table.sub})
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.ren.common.core.interfaces.Pageable;
+import com.ren.common.core.page.TableDataInfo;
+#elseif(${table.tree})
+import com.ren.common.core.domain.vo.TreeSelectVO;
+import com.ren.common.utils.StringUtils;
+import com.ren.common.utils.TreeUtils;
+#end
+import com.ren.common.controller.BaseController;
+import com.ren.common.core.domain.bo.LoginUser;
+import com.ren.common.core.domain.schemas.AjaxResultSchemas;
+import com.ren.common.core.enums.BusinessType;
+import com.ren.common.core.interfaces.OperLogAnn;
+import com.ren.common.core.response.AjaxResult;
+
+import ${packageName}.core.domain.entity.${ClassName};
+#if($table.sub)
+import ${packageName}.core.domain.entity.${subClassName};
+#end
+import ${packageName}.service.${ClassName}Service;
+
+#if(${table.tree})
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjUtil;
+#end
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+/**
+ * ${functionName}Controller
+ *
+ * @author ${author}
+ * @date ${datetime}
+ */
+@RestController
+@RequestMapping("/${moduleName}/${businessName}")
+@Tag(name = "${functionName}", description = "${functionName}")
+public class ${ClassName}Controller extends BaseController {
+
+    @Autowired
+    ${ClassName}Service ${className}Service;
+
+    #if($table.crud || $table.sub)
+    /**
+     * ${functionName}分页列表
+     *
+	 * @param ${className} ${functionName}
+	 * @return 分页列表
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    @GetMapping("/list/page")
+    @Pageable  //注意，如果要开启分页，请添加该注解
+    @Operation(summary = "${functionName}分页列表", description = "${functionName}分页列表")
+    @SecurityRequirements({@SecurityRequirement(name = "JWT")})
+    @ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = TableDataInfo.class)))
+    public TableDataInfo list${ClassName}ByPage( ${ClassName} ${className}) {
+        IPage<${ClassName}> ${className}List = ${className}Service.list${ClassName}ByPage(${className});
+        return getDataTable(${className}List);
+    }
+    #elseif($table.tree)
+	/**
+	 * ${functionName}树形列表（页面显示用）
+	 *
+	 * @param ${className} ${functionName}
+	 * @return 树形列表
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@GetMapping("/tree")
+	@Operation(summary = "${functionName}树形列表", description = "${functionName}树形列表（页面显示用）")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult get${ClassName}Tree( ${ClassName} ${className})
+	{
+		List<${ClassName}> ${className}List = ${className}Service.list${ClassName}ByParam(${className});
+		//将列表转为树形结构
+		${className}List = TreeUtils.formatTree(${className}List, null,"${treeCodeColumn.javaField}","${treeParentCodeColumn.javaField}","children",null);
+		return success(${className}List);
+	}
+
+	/**
+	 * ${functionName}树形列表（其他模块下拉列表用）
+	 *
+	 * @param ${className} ${functionName}
+	 * @return 树形列表
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@GetMapping("/tree/select")
+	@Operation(summary = "${functionName}树形列表", description = "${functionName}树形列表（其他模块下拉列表用）")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult get${ClassName}TreeSelect( ${ClassName} ${className})
+	{
+		List<${ClassName}> ${className}List = ${className}Service.list${ClassName}ByParam(${className});
+		//将列表转为树形结构
+		${className}List = TreeUtils.formatTree(${className}List, null,"${treeCodeColumn.javaField}","${treeParentCodeColumn.javaField}","children",null);
+		List<TreeSelectVO<${treeCodeColumn.javaType}>> mianTree = convertTreeSelect(${className}List);
+		return success(mianTree);
+	}
+
+	/**
+	 * 排除本${functionName}的${functionName}列表（${functionName}本身修改时下拉列表使用）
+	 *
+	 * @param ${treeCodeColumn.javaField} ${functionName}树编码字段
+	 * @return 树形列表
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@GetMapping("/tree/select/doesNotContainSelf${ClassName}/{${treeCodeColumn.javaField}}")
+	@Operation(summary = "排除本${functionName}的${functionName}列表", description = "排除本${functionName}的${functionName}列表（${functionName}本身修改时下拉列表使用）")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult getDoesNotContainSelf${ClassName}TreeSelect(@PathVariable(value = "${treeCodeColumn.javaField}", required = false) @Schema(description = "${functionName}树编码字段",type = "${treeCodeColumn.javaType}") ${treeCodeColumn.javaType} ${treeCodeColumn.javaField})
+	{
+		List<${ClassName}> ${className}List = ${className}Service.list${ClassName}ByParam(null);
+		//移除所有后代元素，只保留上级元素或同级元素
+		//给每个元素设置对应的祖先元素字符串（英文逗号隔开），用于后续排除
+		HashMap<String, String> ancestorsMap = TreeUtils.assembleAncestorsMap(${className}List,"${treeCodeColumn.javaField}","${treeParentCodeColumn.javaField}", "0");
+		${className}List.removeIf(d -> ObjUtil.equals(d.get${treeCodeColumn.capJavaField}(),${treeCodeColumn.javaField}) || CollUtil.contains(
+			StringUtils.split(ancestorsMap.get(d.get${treeCodeColumn.capJavaField}()), ","),
+			String.valueOf(${treeCodeColumn.javaField})
+		));
+		//将列表转为树形结构
+		${className}List = TreeUtils.formatTree(${className}List, null,"${treeCodeColumn.javaField}","${treeParentCodeColumn.javaField}","children",null);
+		List<TreeSelectVO<${treeCodeColumn.javaType}>> mianTree = convertTreeSelect(${className}List);
+		return success(mianTree);
+	}
+
+	/**
+	 * 将树形列表转换为下拉框形式
+	 *
+	 * @param ${className}List 普通未转换下拉框格式的树形列表
+	 * @return 树形列表
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	private List<TreeSelectVO<${treeCodeColumn.javaType}>> convertTreeSelect(List<${ClassName}> ${className}List) {
+		List<TreeSelectVO<${treeCodeColumn.javaType}>> treeSelectVOList = TreeUtils.convertTreeSelectForAll(${className}List, "${treeCodeColumn.javaField}", "${treeNameColumn.javaField}",null, "children");
+		//注意这里的构造方法第一个参数，需要根据树形菜单关联字段类型进行修改，填写一个默认值用于回显即可
+		//TODO 注意这里手动添加的总目录的主键标识默认写的0（Long）类型，实际开发中请根据实际类型进行设置
+		TreeSelectVO<${treeCodeColumn.javaType}> mianSelect = new TreeSelectVO<>(0L,"总目录",false,treeSelectVOList);
+		List<TreeSelectVO<Long>> mianTree = new ArrayList<>();
+		mianTree.add(mianSelect);
+		return mianTree;
+	}
+    #end
+
+    /**
+     * ${functionName}详情
+     *
+	 * @param ${pkColumn.javaField} 主键
+	 * @return ${functionName}详情
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    @GetMapping("/detail")
+    @Operation(summary = "${functionName}详情", description = "${functionName}详情")
+    @SecurityRequirements({@SecurityRequirement(name = "JWT")})
+    @ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+    public AjaxResult ${ClassName}Detail(@Schema(description = "${functionName}标识",type = "${pkColumn.javaType}") ${pkColumn.javaType} ${pkColumn.javaField}) {
+        ${ClassName} ${className} = ${className}Service.get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
+        return success(${className});
+    }
+
+    /**
+     * 添加${functionName}
+     *
+	 * @param add${ClassName} ${functionName}
+	 * @return 添加结果
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    @PostMapping("/add")
+    @OperLogAnn(title = "${functionName}模块", businessType = BusinessType.INSERT)
+    @Operation(summary = "添加${functionName}", description = "添加${functionName}")
+    @SecurityRequirements({@SecurityRequirement(name = "JWT")})
+    @ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+    public AjaxResult add${ClassName}(@AuthenticationPrincipal LoginUser loginUser, @RequestBody(required = false) ${ClassName} add${ClassName}) {
+        ${className}Service.add${ClassName}(add${ClassName},loginUser.getUsername());
+        return success();
+    }
+
+    /**
+     * 编辑${functionName}
+     *
+	 * @param modify${ClassName} ${functionName}
+	 * @return 编辑结果
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    @PostMapping("/modify")
+    @OperLogAnn(title = "${functionName}模块", businessType = BusinessType.UPDATE)
+    @Operation(summary = "编辑${functionName}", description = "编辑${functionName}")
+    @SecurityRequirements({@SecurityRequirement(name = "JWT")})
+    @ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+    public AjaxResult modify${ClassName}(@AuthenticationPrincipal LoginUser loginUser, @RequestBody(required = false) ${ClassName} modify${ClassName}) {
+        ${className}Service.modify${ClassName}(modify${ClassName},loginUser.getUsername());
+        return success();
+    }
+
+    /**
+     * 删除${functionName}
+     *
+	 * @param ${pkColumn.javaField}s 主键数组
+	 * @return 删除结果
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    @DeleteMapping("/delete")
+    @OperLogAnn(title = "${functionName}模块", businessType = BusinessType.DELETE)
+    @Operation(summary = "删除${functionName}", description = "删除${functionName}")
+    @SecurityRequirements({@SecurityRequirement(name = "JWT")})
+    @ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+    public AjaxResult ${className}Delete(@Schema(description = "${functionName}标识数组",type = "${pkColumn.javaType}[]") ${pkColumn.javaType}[] ${pkColumn.javaField}s) {
+		#if($table.tree)
+		//查询是否有子级数据
+		List<${ClassName}> ${className}List = ${className}Service.listSub${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s);
+		if(${className}List != null && !${className}List.isEmpty()){
+			return warn("请先删除子级数据");
+		}
+		#end
+        ${className}Service.remove${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s);
+        return success();
+    }
+
+	#if($table.sub)
+	/*=====================================================sub========================================================*/
+
+    /**
+     * ${subTable.functionName}分页列表
+     *
+     * @param ${subclassName} ${subTable.functionName}
+     * @return 分页列表
+     * @author ${author}
+     * @date ${datetime}
+     */
+    @GetMapping("/sub/list/page")
+    @Pageable  //注意，如果要开启分页，请添加该注解
+    @Operation(summary = "${subTable.functionName}分页列表", description = "${subTable.functionName}分页列表")
+    @SecurityRequirements({@SecurityRequirement(name = "JWT")})
+    @ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = TableDataInfo.class)))
+    public TableDataInfo list${subClassName}ByPage( ${subClassName} ${subclassName}) {
+        IPage<${subClassName}> ${subclassName}List = ${className}Service.list${subClassName}ByPage(${subclassName});
+        return getDataTable(${subclassName}List);
+    }
+
+	/**
+	 * ${subTable.functionName}详情
+	 *
+	 * @param ${subTablePkColumn.javaField} 主键
+	 * @return ${subTable.functionName}详情
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@GetMapping("/sub/detail")
+	@Operation(summary = "${subTable.functionName}详情", description = "${subTable.functionName}详情")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult ${subClassName}Detail(@Schema(description = "${subTable.functionName}标识",type = "${subTablePkColumn.javaType}") ${subTablePkColumn.javaType} ${subTablePkColumn.javaField}) {
+        ${subClassName} ${subclassName} = ${className}Service.get${subClassName}By${subTablePkColumn.capJavaField}(${subTablePkColumn.javaField});
+		return success(${subclassName});
+	}
+
+	/**
+	 * 添加${subTable.functionName}
+	 *
+	 * @param add${subClassName} ${subTable.functionName}
+	 * @return 添加结果
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@PostMapping("/sub/add")
+	@OperLogAnn(title = "${subTable.functionName}模块", businessType = BusinessType.INSERT)
+	@Operation(summary = "添加${subTable.functionName}", description = "添加${subTable.functionName}")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult add${subClassName}(@AuthenticationPrincipal LoginUser loginUser, @RequestBody(required = false) ${subClassName} add${subClassName}) {
+		${className}Service.add${subClassName}(add${subClassName},loginUser.getUsername());
+		return success();
+	}
+
+	/**
+	 * 编辑${subTable.functionName}
+	 *
+	 * @param modify${subClassName} ${subTable.functionName}
+	 * @return 编辑结果
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@PostMapping("/sub/modify")
+	@OperLogAnn(title = "${subTable.functionName}模块", businessType = BusinessType.UPDATE)
+	@Operation(summary = "编辑${subTable.functionName}", description = "编辑${subTable.functionName}")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult modify${subClassName}(@AuthenticationPrincipal LoginUser loginUser, @RequestBody(required = false) ${subClassName} modify${subClassName}) {
+		${className}Service.modify${subClassName}(modify${subClassName},loginUser.getUsername());
+		return success();
+	}
+
+	/**
+	 * 删除${subTable.functionName}
+	 *
+	 * @param ${subTablePkColumn.javaField}s 主键数组
+	 * @return 删除结果
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	@DeleteMapping("/sub/delete")
+	@OperLogAnn(title = "${subTable.functionName}模块", businessType = BusinessType.DELETE)
+	@Operation(summary = "删除${subTable.functionName}", description = "删除${subTable.functionName}")
+	@SecurityRequirements({@SecurityRequirement(name = "JWT")})
+	@ApiResponse(responseCode = "200",description = "成功",content = @Content(mediaType = "application/json", schema = @Schema(implementation = AjaxResultSchemas.class)))
+	public AjaxResult ${subclassName}Delete(@Schema(description = "${subTable.functionName}标识数组",type = "${subTablePkColumn.javaType}[]") ${subTablePkColumn.javaType}[] ${subTablePkColumn.javaField}s) {
+		${className}Service.remove${subClassName}By${subTablePkColumn.capJavaField}s(${subTablePkColumn.javaField}s);
+		return success();
+	}
+	#end
+
+}

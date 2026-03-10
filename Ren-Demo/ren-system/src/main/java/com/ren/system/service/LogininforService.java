@@ -1,0 +1,45 @@
+package com.ren.system.service;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.ren.common.core.domain.entity.Logininfor;
+
+import java.util.Map;
+
+public interface LogininforService extends IService<Logininfor> {
+
+    /**
+     * 添加登录日志
+     * @param logininfor
+     * @return int
+     * @author ren
+     * @date 2025/05/18 13:49
+     */
+    long addLogininfor(Logininfor logininfor);
+
+    /**
+     * 删除登录日志
+     * @param infoId
+     * @author ren
+     * @date 2025/05/18 13:49
+     */
+    void removeLogininfor(long infoId);
+
+    /**
+     * 分页获取登录日志列表
+     * @param searchLike
+     * @return com.baomidou.mybatisplus.core.metadata.IPage<com.ren.common.domain.entity.Logininfor>
+     * @author ren
+     * @date 2025/05/18 13:50
+     */
+    IPage<Logininfor> listLogininforByPage(String searchLike);
+
+    /**
+     * 获取登录日志详情
+     * @param infoId
+     * @return com.ren.common.domain.entity.Logininfor
+     * @author ren
+     * @date 2025/05/18 13:50
+     */
+    Logininfor getLogininforById(long infoId);
+}

@@ -1,0 +1,21 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts", 
+    "src/**/*", 
+    "src/**/*.vue",
+    "auto-imports.d.ts", // 包含自动导入类型
+    "components.d.ts",   // 自定义组件的导入
+  ],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "types": [
+      "vite/client",
+      "element-plus/global" // 加载 Element Plus 全局类型
+    ],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.system.mapper.MenuMapper">
+
+    <resultMap type="menu" id="MenuResult">
+        <id     property="menuId"       column="menu_id"      />
+        <result property="menuName"     column="menu_name"    />
+        <result property="parentId"     column="parent_id"    />
+        <result property="orderNum"     column="order_num"    />
+        <result property="routeName"     column="route_name"    />
+        <result property="path"     column="path"    />
+        <result property="component"     column="component"    />
+        <result property="query"     column="query"    />
+        <result property="isFrame"     column="is_frame"    />
+        <result property="isCache"     column="is_cache"    />
+        <result property="menuType"     column="menu_type"    />
+        <result property="isVisible"     column="is_visible"    />
+        <result property="isStop"     column="is_stop"    />
+        <result property="isDel"     column="is_del"    />
+        <result property="perms"     column="perms"    />
+        <result property="icon"     column="icon"    />
+        <result property="createBy"     column="create_by"    />
+        <result property="createTime"   column="create_time"  />
+        <result property="createTimeStr"   column="create_time_str"  />
+        <result property="updateBy"     column="update_by"    />
+        <result property="updateTime"   column="update_time"  />
+        <result property="updateTimeStr"   column="update_time_str"  />
+        <result property="remark"       column="remark"       />
+    </resultMap>
+
+    <sql id="selectMenuVo">
+        select
+            menu_id,menu_name,parent_id,order_num,route_name,path,component,query,is_frame,is_cache,menu_type,is_visible,is_stop,is_del,perms,icon,
+            create_time, create_by,FROM_UNIXTIME(create_time, '%Y-%m-%d %H:%i:%s') AS create_time_str, update_by, update_time, FROM_UNIXTIME(update_time, '%Y-%m-%d %H:%i:%s') AS update_time_str, remark
+        from sys_menu
+    </sql>
+
+    <insert id="insertMenu" parameterType="menu" useGeneratedKeys="true" keyProperty="menuId" keyColumn="menu_id">
+        insert into sys_menu(
+        <if test="menuId != null and menuId != 0">menu_id,</if>
+        <if test="menuName != null and menuName != ''">menu_name,</if>
+        <if test="parentId != null">parent_id,</if>
+        <if test="orderNum != null">order_num,</if>
+        <if test="routeName != null and routeName != ''">route_name,</if>
+        <if test="path != null and path != ''">path,</if>
+        <if test="component != null and component != ''">component,</if>
+        <if test="query != null and query != ''">query,</if>
+        <if test="isFrame != null">is_frame,</if>
+        <if test="isCache != null">is_cache,</if>
+        <if test="menuType != null">menu_type,</if>
+        <if test="isVisible != null">is_visible,</if>
+        <if test="isStop != null">is_stop,</if>
+        <if test="perms != null and perms != ''">perms,</if>
+        <if test="icon != null and icon != ''">icon,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        create_by,
+        create_time
+        )values(
+        <if test="menuId != null and menuId != ''">#{menuId},</if>
+        <if test="menuName != null and menuName != ''">#{menuName},</if>
+        <if test="parentId != null">#{parentId},</if>
+        <if test="orderNum != null">#{orderNum},</if>
+        <if test="routeName != null and routeName != ''">#{routeName},</if>
+        <if test="path != null and path != ''">#{path},</if>
+        <if test="component != null and component != ''">#{component},</if>
+        <if test="query != null and query != ''">#{query},</if>
+        <if test="isFrame != null">#{isFrame},</if>
+        <if test="isCache != null">#{isCache},</if>
+        <if test="menuType != null">#{menuType},</if>
+        <if test="isVisible != null">#{isVisible},</if>
+        <if test="isStop != null">#{isStop},</if>
+        <if test="perms != null and perms != ''">#{perms},</if>
+        <if test="icon != null and icon != ''">#{icon},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        #{createBy},
+        #{createTime}
+        )
+    </insert>
+
+    <update id="updateMenuIsDelById">
+        update sys_menu
+        <set>
+            is_del = #{isDel},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where menu_id = #{menuId}
+    </update>
+
+    <update id="updateMenuById" parameterType="menu">
+        update sys_menu
+        <set>
+            <if test="menuId != null">menu_id = #{menuId},</if>
+            <if test="menuName != null and menuName != ''">menu_name = #{menuName},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="orderNum != null">order_num = #{orderNum},</if>
+            <if test="routeName != null">route_name = #{routeName},</if>
+            <if test="path != null and path != ''">path = #{path},</if>
+            <if test="component != null and component != ''">component = #{component},</if>
+            <if test="query != null and query != ''">query = #{query},</if>
+            <if test="isFrame != null">is_frame = #{isFrame},</if>
+            <if test="isCache != null">is_cache = #{isCache},</if>
+            <if test="menuType != null">menu_type = #{menuType},</if>
+            <if test="isVisible != null">is_visible = #{isVisible},</if>
+            <if test="isStop != null">is_stop = #{isStop},</if>
+            <if test="perms != null and perms != ''">perms = #{perms},</if>
+            <if test="icon != null and icon != ''">icon = #{icon},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where menu_id = #{menuId}
+    </update>
+
+    <select id="listMenuByParam" resultMap="MenuResult">
+        <include refid="selectMenuVo"/>
+        <where>
+            is_del=0
+            <if test="menuType != null and menuType != ''">
+                AND menu_type = #{menuType}
+            </if>
+            <if test="parentId != null and parentId != ''">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="routeName != null and routeName != ''">
+                AND route_name = #{routeName}
+            </if>
+            <if test="searchLike != null and searchLike != ''">
+                AND (menu_name LIKE #{searchLike} or route_name LIKE #{searchLike} or perms LIKE #{searchLike})
+            </if>
+        </where>
+    </select>
+
+    <select id="listMenuByRoleIds" resultMap="MenuResult">
+        select
+            sm.menu_id,sm.menu_name,sm.parent_id,sm.order_num,sm.route_name,sm.path,sm.component,sm.query,sm.is_frame,sm.is_cache,sm.menu_type,sm.is_visible,sm.is_stop,sm.is_del,sm.perms,sm.icon,
+            sm.create_time, sm.create_by,FROM_UNIXTIME(sm.create_time, '%Y-%m-%d %H:%i:%s') AS create_time_str, sm.update_by, sm.update_time, FROM_UNIXTIME(sm.update_time, '%Y-%m-%d %H:%i:%s') AS update_time_str, sm.remark
+        from sys_menu sm
+        left join sys_role_menu srm on sm.menu_id = srm.menu_id
+        where sm.is_del = 0
+        <if test="roleIds != null and roleIds != ''">
+            and srm.role_id in
+            <foreach item="item" collection="roleIds" index="index" separator="," close=")" open="(">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,19 @@
+-- 菜单 SQL
+insert into sys_menu (menu_name, parent_id, order_num, route_name, path, component, is_frame, is_cache, menu_type, is_visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('${functionName}', '${parentMenuId}', '1', '${businessName}', '${businessName}', '${moduleName}/${businessName}/Index', 1, 0, 'C', '0', '${permissionPrefix}:list', '#', 'admin', UNIX_TIMESTAMP(), '', null, '${functionName}菜单');
+
+-- 获取最后一条插入语句的主键值（给下方插入权限使用）
+SELECT @parentId := LAST_INSERT_ID();
+
+-- 按钮 SQL
+insert into sys_menu (menu_name, parent_id, order_num, route_name, path, component, is_frame, is_cache, menu_type, is_visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('${functionName}查询', @parentId, '1', '',  '#', '', 1, 0, 'F', '0', '${permissionPrefix}:query',        '#', 'admin', UNIX_TIMESTAMP(), '', null, '');
+
+insert into sys_menu (menu_name, parent_id, order_num, route_name, path, component, is_frame, is_cache, menu_type, is_visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('${functionName}新增', @parentId, '2', '',  '#', '', 1, 0, 'F', '0', '${permissionPrefix}:add',          '#', 'admin', UNIX_TIMESTAMP(), '', null, '');
+
+insert into sys_menu (menu_name, parent_id, order_num, route_name, path, component, is_frame, is_cache, menu_type, is_visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('${functionName}修改', @parentId, '3', '',  '#', '', 1, 0, 'F', '0', '${permissionPrefix}:edit',         '#', 'admin', UNIX_TIMESTAMP(), '', null, '');
+
+insert into sys_menu (menu_name, parent_id, order_num, route_name, path, component, is_frame, is_cache, menu_type, is_visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('${functionName}删除', @parentId, '4', '',  '#', '', 1, 0, 'F', '0', '${permissionPrefix}:remove',       '#', 'admin', UNIX_TIMESTAMP(), '', null, '');

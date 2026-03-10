@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ren</groupId>
+        <artifactId>Ren-Demo</artifactId>
+        <version>0.0.1</version>
+    </parent>
+
+    <artifactId>ren-admin</artifactId>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!--所需要的依赖-->
+    <dependencies>
+
+        <!--*******************************************Jar包依赖****************************************-->
+
+        <!--发送邮件所需Jar包-->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+        </dependency>
+
+        <!-- 开发工具（热部署、自动重启） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+        </dependency>
+
+        <!--SpringBoot单元测试依赖（单元测试模块无法在Common模块统一引入，因为Scope的限制）-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--*******************************************项目内模块****************************************-->
+
+        <!-- 通用工具-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-common</artifactId>
+        </dependency>
+
+        <!--核心模块-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-framework</artifactId>
+        </dependency>
+
+        <!--系统模块-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-system</artifactId>
+        </dependency>
+
+        <!--监控模块-->
+		<dependency>
+			<groupId>com.ren</groupId>
+			<artifactId>ren-monitor</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+        <!--云文件上传模块（暂时不引入）-->
+<!--        <dependency>-->
+<!--            <groupId>com.ren</groupId>-->
+<!--            <artifactId>ren-cloudstorage</artifactId>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+
+        <!--本地文件上传模块-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-localstorage</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--定时任务模块-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-quartz</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--代码生成模块-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-generator</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--AI模块-->
+        <dependency>
+            <groupId>com.ren</groupId>
+            <artifactId>ren-ai</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

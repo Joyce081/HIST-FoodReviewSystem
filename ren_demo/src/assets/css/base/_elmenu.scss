@@ -1,0 +1,10 @@
+/* 折叠时隐藏所有菜单项文字 */
+.el-menu--collapse .el-menu-item span,
+.el-menu--collapse .el-sub-menu__title span {
+	display: none !important;
+}
+
+/* 折叠时隐藏箭头图标（如需） */
+.el-menu--collapse .el-sub-menu__icon-arrow {
+	display: none !important;
+}

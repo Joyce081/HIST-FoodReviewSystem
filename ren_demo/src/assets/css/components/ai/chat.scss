@@ -1,0 +1,48 @@
+// 提升AI组件的z-index防止他和elementplus组件冲突，从而无法正确显示
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-picker-panel,
+.ant-popover,
+.ant-tooltip,
+.ant-notification,
+.ant-message,
+.ant-modal-wrap,
+.ant-image-preview,
+.ant-drawer {
+  z-index: 10000 !important;
+}
+
+/* Modal 相关 */
+.ant-modal-mask {
+  z-index: 9999 !important;
+}
+.ant-modal-wrap {
+  z-index: 10000 !important;
+}
+
+/* 下拉菜单内部 */
+.ant-dropdown-menu {
+  z-index: 10001 !important;
+}
+
+/* Select 下拉 */
+.ant-select-dropdown {
+  z-index: 10000 !important;
+}
+
+/* Popover 和 Tooltip */
+.ant-popover-inner,
+.ant-tooltip-inner {
+  z-index: 10000 !important;
+}
+
+/* 页面CSS信息 */
+.outer-container {
+  height: 600px; /* 或者设置一个固定高度，例如 600px */
+  padding: 16px;
+  box-sizing: border-box;
+  
+  .main-chat-area {
+    height: 100%;
+  }
+}

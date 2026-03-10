@@ -1,0 +1,8 @@
+// 子页面跳转所需路由，请复制以下内容，粘贴至项目/router/index.js 文件中，需要放在路由名为mainLayout的子路由中
+// 注意，路由路径和路由名称以及需要显示的菜单，可自行修改配置
+{
+  path: "${moduleName}/${businessName}/sub",
+  name: "${businessName}_sub",
+  component: () => import("@/views/${moduleName}/${businessName}/sub/Index.vue"),
+  meta: { requiresAuth: true, roles: [], menuShow: "/${moduleName}/${businessName}" }, // 需要认证
+},

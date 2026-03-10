@@ -1,0 +1,118 @@
+package ${packageName}.mapper;
+
+import java.util.List;
+import ${packageName}.core.domain.entity.${ClassName};
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+#if($table.crud || $table.sub)
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+#end
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * ${functionName}Mapper接口
+ * 
+ * @author ${author}
+ * @date ${datetime}
+ */
+@Mapper
+public interface ${ClassName}Mapper extends BaseMapper<${ClassName}>
+{
+	/**
+	 * 添加${functionName}
+	 *
+	 * @param ${className} ${functionName}
+	 * @return 添加结果主键
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	void insert${ClassName}(${ClassName} ${className});
+
+	/**
+	 * 批量删除${functionName}
+	 *
+	 * @param ${pkColumn.javaField}s 需要删除的数据主键集合
+	 * @return 成功删除数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	int delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
+
+	/**
+	 * 编辑${functionName}
+	 *
+	 * @param ${className} ${functionName}
+	 * @return 成功编辑数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	int update${ClassName}(${ClassName} ${className});
+
+    /**
+     * ${functionName}详情
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return ${functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+     ${ClassName} select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+
+	/**
+	 * 获取${functionName}列表
+	 *
+	 * @param ${className} ${functionName}
+	 * @return ${functionName}集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	List<${ClassName}> list${ClassName}ByParam(${ClassName} ${className});
+
+    #if($table.crud || $table.sub)
+	/**
+	 * 获取${functionName}分页列表
+	 *
+     * @param page 分页参数
+	 * @param ${className} ${functionName}
+	 * @return ${functionName}分页集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	IPage<${ClassName}> list${ClassName}ByPage(Page<${ClassName}> page, @Param("${className}")${ClassName} ${className});
+	#elseif($table.tree)
+	/**
+	 * 获取主键数组获取所有子级列表
+	 *
+	 * @param ${pkColumn.javaField}s 主键数组
+	 * @return 子级集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	List<${ClassName}> listSub${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
+    #end
+
+	#if($table.sub)
+	/**
+	 * ${functionName}详情（包含子项）
+	 *
+	 * @param ${pkColumn.javaField} ${functionName}主键
+	 * @return ${functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	${ClassName} select${ClassName}IncludeSubBy${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+
+	/**
+	 * 获取${functionName}列表（包含子项）
+	 *
+	 * @param ${className} ${functionName}
+	 * @return ${functionName}集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	List<${ClassName}> list${ClassName}IncludeSubByParam(${ClassName} ${className});
+	#end
+
+}

@@ -1,0 +1,103 @@
+package ${packageName}.mapper;
+
+import java.util.List;
+import ${packageName}.core.domain.entity.${subClassName};
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ * ${subTable.functionName}Mapper接口
+ * 
+ * @author ${author}
+ * @date ${datetime}
+ */
+@Mapper
+public interface ${subClassName}Mapper extends BaseMapper<${subClassName}>
+{
+
+	/**
+	 * 批量添加${subTable.functionName}
+	 *
+	 * @param ${subclassName}List ${subTable.functionName}列表
+	 * @return 成功添加数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	int batchInsert${subClassName}(List<${subClassName}> ${subclassName}List);
+
+	/**
+	 * 添加${subTable.functionName}
+	 *
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return 添加结果主键
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	void insert${subClassName}(${subClassName} ${subclassName});
+
+	/**
+	 * 批量删除${subTable.functionName}
+	 *
+	 * @param ${subTableFkColumn.javaField}s 需要删除的数据外键集合
+	 * @return 成功删除数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	int delete${subClassName}By${subTableFkColumn.capJavaField}s(${subTableFkColumn.javaType}[] ${subTableFkColumn.javaField}s);
+
+	/**
+	 * 批量删除${subTable.functionName}
+	 *
+	 * @param ${subTablePkColumn.javaField}s 需要删除的数据主键集合
+	 * @return 成功删除数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	int delete${subClassName}By${subTablePkColumn.capJavaField}s(${subTablePkColumn.javaType}[] ${subTablePkColumn.javaField}s);
+
+	/**
+	 * 编辑${subTable.functionName}
+	 *
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return 成功编辑数量
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	int update${subClassName}(${subClassName} ${subclassName});
+
+    /**
+     * ${subTable.functionName}详情
+     * 
+     * @param ${subTablePkColumn.javaField} ${subTable.functionName}主键
+     * @return ${subTable.functionName}
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    public ${subClassName} select${subClassName}By${subTablePkColumn.capJavaField}(${subTablePkColumn.javaType} ${subTablePkColumn.javaField});
+
+	/**
+	 * 获取${subTable.functionName}分页列表
+	 *
+	 * @param page 分页参数
+	 * @param ${subclassName} ${subTable.functionName}
+	 * @return ${subTable.functionName}分页集合
+	 * @author ${author}
+	 * @date ${datetime}
+	 */
+	IPage<${subClassName}> list${subClassName}ByPage(Page<${subClassName}> page, @Param("${subclassName}")${subClassName} ${subclassName});
+
+    /**
+     * 获取${subTable.functionName}列表
+     * 
+     * @param ${subclassName} ${subTable.functionName}
+     * @return ${subTable.functionName}集合
+	 * @author ${author}
+	 * @date ${datetime}
+     */
+    List<${subClassName}> list${subClassName}ByParam(${subClassName} ${subclassName});
+
+}

@@ -1,0 +1,34 @@
+.el-row {
+	margin-bottom: 20px;
+}
+:deep(.el-card__header) {
+	padding: 15px 15px 7px;
+}
+.card-header {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+/* 确保容器自适应 */
+.custom-descriptions {
+	width: 100%;
+}
+:deep(.labelClass) {
+	width: 150px;
+}
+/* 所有内容基础样式 */
+.content-text {
+	display: inline-block;
+	max-width: 100%; /* 预留 label 宽度 */
+	word-wrap: break-word; /* 强制换行 */
+}
+/* 长文本特殊处理 */
+.long-content {
+	display: inline-block;
+	max-width: 100%;
+	word-break: break-all; /* 允许在任意字符间断行 */
+	vertical-align: top; /* 顶部对齐防止高度塌陷 */
+}
+.el-descriptions .el-descriptions__label{
+	background-color: var(--server-item-title-bg-color,#edf4fa) !important;
+}

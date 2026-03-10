@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.ai.mapper.AiChatClientConversationMessageMapper">
+
+    <resultMap type="aiChatClientConversationMessage" id="AiChatClientConversationMessageResult">
+        <id     property="messageId"       column="message_id"      />
+        <result property="conversationId"       column="conversation_id"      />
+        <result property="messageIndex"        column="message_index"      />
+        <result property="role"        column="role"      />
+        <result property="content"        column="content"      />
+        <result property="isDel"        column="is_del"    />
+        <result property="createBy"     column="create_by"    />
+        <result property="createTime"   column="create_time"  />
+        <result property="createTimeStr"   column="create_time_str"  />
+        <result property="updateBy"     column="update_by"    />
+        <result property="updateTime"   column="update_time"  />
+        <result property="updateTimeStr"   column="update_time_str"  />
+    </resultMap>
+
+    <sql id="selectAiChatClientConversationMessageVo">
+        select
+            message_id,conversation_id,message_index,role,content,is_del,
+            create_time, create_by,FROM_UNIXTIME(create_time, '%Y-%m-%d %H:%i:%s') AS create_time_str, update_by, update_time, FROM_UNIXTIME(update_time, '%Y-%m-%d %H:%i:%s') AS update_time_str
+        from ai_chat_client_conversation_message
+    </sql>
+
+    <insert id="insertAiChatClientConversationMessage" parameterType="aiChatClientConversationMessage" useGeneratedKeys="true" keyProperty="messageId" keyColumn="message_id">
+        insert into ai_chat_client_conversation_message(
+        <if test="conversationId != null">conversation_id,</if>
+        <if test="messageIndex != null">message_index,</if>
+        <if test="role != null">role,</if>
+        <if test="content != null">content,</if>
+        <if test="isDel != null">is_del,</if>
+        create_by,
+        create_time
+        )values(
+        <if test="conversationId != null">#{conversationId},</if>
+        <if test="messageIndex != null">#{messageIndex},</if>
+        <if test="role != null">#{role},</if>
+        <if test="content != null">#{content},</if>
+        <if test="isDel != null">#{isDel},</if>
+        #{createBy},
+        #{createTime}
+        )
+    </insert>
+
+    <insert id="insertAiChatClientConversationMessageList">
+        insert into ai_chat_client_conversation_message(
+            conversation_id, message_index, role, content, is_del,
+            create_by, create_time
+        ) values
+        <foreach collection="aiChatClientConversationMessages" item="item" separator=",">
+            (#{item.conversationId}, #{item.messageIndex}, #{item.role}, #{item.content}, #{item.isDel},
+            #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateAiChatClientConversationMessageIsDelByMessageId">
+        update ai_chat_client_conversation_message
+        <set>
+            is_del = #{isDel},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where message_id = #{messageId}
+    </update>
+
+    <update id="updateAiChatClientConversationMessageIsDelByConversationId">
+        update ai_chat_client_conversation_message
+        <set>
+            is_del = #{isDel},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where conversation_id = #{conversationId}
+    </update>
+
+    <select id="listAiChatClientConversationMessageByParam" resultMap="AiChatClientConversationMessageResult">
+        <include refid="selectAiChatClientConversationMessageVo"/>
+        <where>
+            is_del=0
+            <if test="conversationId != null">
+                AND conversation_id = #{conversationId}
+            </if>
+            <if test="roleList != null">
+                AND role in
+                <foreach item="role" collection="roleList" open="(" separator="," close=")">
+                    #{role}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY message_index ASC
+    </select>
+
+    <select id="listAiChatClientConversationMessageByExcludeMessageId" resultMap="AiChatClientConversationMessageResult">
+        <include refid="selectAiChatClientConversationMessageVo"/>
+        <where>
+            is_del=0
+            <if test="conversationId != null">
+                AND conversation_id = #{conversationId}
+            </if>
+            <if test="excludeMessageIdList != null">
+                AND message_id not in
+                <foreach item="messageId" collection="excludeMessageIdList" open="(" separator="," close=")">
+                    #{messageId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY message_index ASC
+    </select>
+
+    <select id="selectAiChatClientConversationMessageById" resultMap="AiChatClientConversationMessageResult">
+        <include refid="selectAiChatClientConversationMessageVo"/>
+        <where>
+            <if test="messageId != null">
+                AND message_id = #{messageId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectLastMessage" resultMap="AiChatClientConversationMessageResult">
+        <include refid="selectAiChatClientConversationMessageVo"/>
+        <where>
+            is_del=0
+            <if test="conversationId != null">
+                AND conversation_id = #{conversationId}
+            </if>
+        </where>
+        order by message_index desc
+        limit 1
+    </select>
+
+    <!-- updateAiChatClientConversationMessageById --> 
+    <update id="updateAiChatClientConversationMessageById" parameterType="aiChatClientConversationMessage">
+        update ai_chat_client_conversation_message
+        <set>
+            <if test="content != null">content = #{content},</if>
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where message_id = #{messageId}
+    </update>
+
+</mapper>

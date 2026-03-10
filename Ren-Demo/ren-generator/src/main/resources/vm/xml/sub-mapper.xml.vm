@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${packageName}.mapper.${subClassName}Mapper">
+    
+    <resultMap type="${subClassName}" id="${subClassName}Result">
+        #foreach($column in $subTable.columns)
+        <result property="${column.javaField}"    column="${column.columnName}"    />
+        #end
+    </resultMap>
+
+	<sql id="select${subClassName}Vo">
+        select#foreach($column in $subTable.columns) $column.columnName#if($foreach.count != $subTable.columns.size()),#end#end from ${subTableName}
+	</sql>
+
+	<insert id="batchInsert${subClassName}">
+		insert into ${subTableName}
+            (#foreach($column in $subTable.columns) #if(($column.columnName != $subTablePkColumn.columnName || !$subTablePkColumn.increment))$column.columnName#if($foreach.count != $subTable.columns.size()),#end#end#end)
+        values
+		<foreach item="item" index="index" collection="list" separator=",">
+			(#foreach($column in $subTable.columns) #if(($column.columnName != $subTablePkColumn.columnName || !$subTablePkColumn.increment))#{item.$column.javaField}#if($foreach.count != $subTable.columns.size()),#end#end#end)
+		</foreach>
+	</insert>
+
+	<insert id="insert${subClassName}" parameterType="${subClassName}"#if($subTablePkColumn.increment) useGeneratedKeys="true" keyProperty="$subTablePkColumn.javaField"#end>
+		insert into ${subTableName}
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+        #foreach($column in $subTable.columns)
+        #if(($column.columnName != $subTablePkColumn.columnName || !$subTablePkColumn.increment) && $column.columnName != 'create_by' && $column.columnName != 'create_time')
+            <if test="$column.javaField != null#if($column.javaType == 'String' && $column.required) and $column.javaField != ''#end">$column.columnName,</if>
+        #elseif($column.columnName == 'create_by' || $column.columnName == 'create_time')
+            $column.columnName,
+        #end
+        #end
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+        #foreach($column in $subTable.columns)
+        #if(($column.javaField != $subTablePkColumn.javaField || !$subTablePkColumn.increment) && $column.javaField != 'createBy' && $column.javaField != 'createTime')
+            <if test="$column.javaField != null#if($column.javaType == 'String' && $column.required) and $column.javaField != ''#end">#{$column.javaField},</if>
+        #elseif($column.javaField == 'createBy' || $column.javaField == 'createTime')
+			#{$column.javaField},
+        #end
+        #end
+		</trim>
+	</insert>
+
+	<delete id="delete${subClassName}By${subTableFkColumn.capJavaField}s" parameterType="String">
+		delete from ${subTableName} where ${subTableFkColumn.columnName} in
+		<foreach item="${subTableFkColumn.javaField}" collection="array" open="(" separator="," close=")">
+			#{${subTableFkColumn.javaField}}
+		</foreach>
+	</delete>
+
+	<delete id="delete${subClassName}By${subTablePkColumn.capJavaField}s" parameterType="String">
+		delete from ${subTableName} where ${subTablePkColumn.columnName} in
+		<foreach item="${subTablePkColumn.javaField}" collection="array" open="(" separator="," close=")">
+			#{${subTablePkColumn.javaField}}
+		</foreach>
+	</delete>
+
+	<update id="update${subClassName}" parameterType="${subClassName}">
+		update ${subTableName}
+		<trim prefix="SET" suffixOverrides=",">
+        #foreach($column in $subTable.columns)
+        #if($column.columnName != $subTablePkColumn.columnName && $column.columnName != 'create_by' && $column.columnName != 'create_time')
+            <if test="$column.javaField != null#if($column.javaType == 'String' && $column.required) and $column.javaField != ''#end">$column.columnName = #{$column.javaField},</if>
+        #end
+        #end
+		</trim>
+		where ${subTablePkColumn.columnName} = #{${subTablePkColumn.javaField}}
+	</update>
+
+	<select id="select${subClassName}By${subTablePkColumn.capJavaField}" parameterType="${subTablePkColumn.javaType}" resultMap="${subClassName}Result">
+        <include refid="select${subClassName}Vo"/>
+        where ${subTablePkColumn.columnName} = #{${subTablePkColumn.javaField}}
+	</select>
+
+    #if($table.crud || $table.sub)
+    <select id="list${subClassName}ByPage" parameterType="${subClassName}" resultMap="${subClassName}Result">
+        <include refid="select${subClassName}Vo"/>
+        <where>
+            #foreach($column in $subTable.columns)
+            #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+            #if($column.query)
+            #if($column.queryType == "EQ")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName = #{${subclassName}.$column.javaField}</if>
+            #elseif($column.queryType == "NE")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName != #{${subclassName}.$column.javaField}</if>
+            #elseif($column.queryType == "GT")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName &gt; #{${subclassName}.$column.javaField}</if>
+            #elseif($column.queryType == "GTE")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName &gt;= #{${subclassName}.$column.javaField}</if>
+            #elseif($column.queryType == "LT")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName &lt; #{${subclassName}.$column.javaField}</if>
+            #elseif($column.queryType == "LTE")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName &lt;= #{${subclassName}.$column.javaField}</if>
+            #elseif($column.queryType == "LIKE")
+            <if test="${subclassName} != null and ${subclassName}.$column.javaField != null #if($column.javaType == 'String' ) and ${subclassName}.$column.javaField.trim() != ''#end"> and $column.columnName like concat('%', #{${subclassName}.$column.javaField}, '%')</if>
+            #elseif($column.queryType == "BETWEEN")
+            <if test="params.begin$AttrName != null and params.begin$AttrName != '' and params.end$AttrName != null and params.end$AttrName != ''"> and $column.columnName between #{params.begin$AttrName} and #{params.end$AttrName}</if>
+            #end
+            #end
+            #end
+        </where>
+    </select>
+
+    <select id="list${subClassName}ByParam" parameterType="${subClassName}" resultMap="${subClassName}Result">
+        <include refid="select${subClassName}Vo"/>
+        <where>
+            #foreach($column in $subTable.columns)
+            #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+            #if($column.query)
+            #if($column.queryType == "EQ")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName = #{$column.javaField}</if>
+            #elseif($column.queryType == "NE")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName != #{$column.javaField}</if>
+            #elseif($column.queryType == "GT")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName &gt; #{$column.javaField}</if>
+            #elseif($column.queryType == "GTE")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName &gt;= #{$column.javaField}</if>
+            #elseif($column.queryType == "LT")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName &lt; #{$column.javaField}</if>
+            #elseif($column.queryType == "LTE")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName &lt;= #{$column.javaField}</if>
+            #elseif($column.queryType == "LIKE")
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField.trim() != ''#end"> and $column.columnName like concat('%', #{$column.javaField}, '%')</if>
+            #elseif($column.queryType == "BETWEEN")
+            <if test="params.begin$AttrName != null and params.begin$AttrName != '' and params.end$AttrName != null and params.end$AttrName != ''"> and $column.columnName between #{params.begin$AttrName} and #{params.end$AttrName}</if>
+            #end
+            #end
+            #end
+        </where>
+    </select>
+    #end
+
+</mapper>

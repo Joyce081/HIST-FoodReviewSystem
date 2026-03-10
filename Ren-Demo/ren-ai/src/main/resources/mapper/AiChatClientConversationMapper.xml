@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ren.ai.mapper.AiChatClientConversationMapper">
+
+    <resultMap type="aiChatClientConversation" id="AiChatClientConversationResult">
+        <id     property="conversationId"       column="conversation_id"      />
+        <result property="userId"       column="user_id"      />
+        <result property="title"        column="title"      />
+        <result property="model"        column="model"      />
+        <result property="isDel"        column="is_del"    />
+        <result property="createBy"     column="create_by"    />
+        <result property="createTime"   column="create_time"  />
+        <result property="createTimeStr"   column="create_time_str"  />
+        <result property="updateBy"     column="update_by"    />
+        <result property="updateTime"   column="update_time"  />
+        <result property="updateTimeStr"   column="update_time_str"  />
+    </resultMap>
+
+    <sql id="selectAiChatClientConversationVo">
+        select
+            conversation_id,user_id,title,model,is_del,
+            create_time, create_by,FROM_UNIXTIME(create_time, '%Y-%m-%d %H:%i:%s') AS create_time_str, update_by, update_time, FROM_UNIXTIME(update_time, '%Y-%m-%d %H:%i:%s') AS update_time_str
+        from ai_chat_client_conversation
+    </sql>
+
+    <insert id="insertAiChatClientConversation" parameterType="aiChatClientConversation">
+        insert into ai_chat_client_conversation(
+        conversation_id,
+        <if test="userId != null">user_id,</if>
+        <if test="title != null">title,</if>
+        <if test="model != null">model,</if>
+        <if test="isDel != null">is_del,</if>
+        create_by,
+        create_time
+        )values(
+        #{conversationId},
+        <if test="userId != null">#{userId},</if>
+        <if test="title != null">#{title},</if>
+        <if test="model != null">#{model},</if>
+        <if test="isDel != null">#{isDel},</if>
+        #{createBy},
+        #{createTime}
+        )
+    </insert>
+
+    <update id="updateAiChatClientConversationIsDelById">
+        update ai_chat_client_conversation
+        <set>
+            is_del = #{isDel},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="updateAiChatClientConversationById" parameterType="aiChatClientConversation">
+        update ai_chat_client_conversation
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="model != null">model = #{model},</if>
+            <if test="isDel != null">is_del = #{isDel},</if>
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        </set>
+        where conversation_id = #{conversationId}
+    </update>
+
+    <select id="selectAiChatClientConversationById" resultMap="AiChatClientConversationResult">
+        <include refid="selectAiChatClientConversationVo"/>
+        <where>
+            <if test="conversationId != null">
+                AND conversation_id = #{conversationId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listAiChatClientConversationByParam" resultMap="AiChatClientConversationResult">
+        <include refid="selectAiChatClientConversationVo"/>
+        <where>
+            is_del=0
+            <if test="title != null and title != ''">
+                AND (title LIKE #{title})
+            </if>
+            <if test="model != null">
+                AND model = #{model}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY create_time ASC
+    </select>
+
+</mapper>

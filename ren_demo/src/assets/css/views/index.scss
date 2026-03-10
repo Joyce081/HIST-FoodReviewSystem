@@ -1,0 +1,65 @@
+.search-form-div{
+ 	background-color: var(--search-form-bg-color,#edf4fa);
+  padding: 20px;
+  padding-bottom: 0;
+  margin-bottom: 10px;
+  border: 1px solid var(--search-form-border-color,#e6e6e6);
+  border-radius: 0 0 4px 4px;
+}
+
+.search-form .el-form-item {
+	width: 280px;
+	border: none;
+}
+
+.bigLine {
+	width: 633px;
+}
+
+.smallLine {
+	width: 300px;
+}
+
+label {
+  font-weight: 700;
+}
+
+/* 相邻兄弟选择器 */
+.compact-btn + .compact-btn {
+  margin-left: 4px !important;
+}
+
+/* 修改特定表格的表头背景色 */
+.custom-table .el-table__header-wrapper,.el-table__fixed-header-wrapper {
+	th {
+		word-break: break-word;
+		background-color: var(--data-table-header-bg-color,#edf4fa) !important;
+		color: var(--data-table-header-color,#515a6e);
+		height: 45px;
+		font-size: 13px;
+	}
+}
+
+/* DropDown下拉框修改 */
+.custom-dropdown-menu {
+	background-color: var(--dropdown-menu-bg-color,#ffffff) !important; /* 菜单背景 */
+	border: 1px solid var(--dropdown-menu-border-color,#ffffff) !important; /* 边框 */
+	.el-dropdown-menu{
+		background-color: var(--dropdown-menu-bg-color,#ffffff) !important; /* 菜单背景 */
+		border: 1px solid var(--dropdown-menu-border-color,#ffffff) !important; /* 边框 */
+		.el-dropdown-menu__item {
+			color: var(--dropdown-menu-item-color,#2C2C30) !important; /* 默认文字色 */
+		}
+
+		.el-dropdown-menu__item:hover {
+			background-color: var(--dropdown-menu-item-hover-bg-color,#F3F3F3) !important;
+			color: var(--dropdown-menu-item-color,#2C2C30) !important; /* 品牌色 */
+		}
+	}
+}
+
+.el-switch {
+	// 如果自定义颜色不存在，则使用默认颜色
+	--el-switch-on-color: var(--el-switch-on-color-cover,#409eff) !important;
+	--el-switch-off-color: var(--el-switch-off-color-cover,#4C4D4F) !important;
+}

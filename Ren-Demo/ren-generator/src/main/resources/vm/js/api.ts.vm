@@ -1,0 +1,65 @@
+import { service } from "@/services/axios";
+
+#if($table.crud || $table.sub)
+// ${functionName}分页列表
+export const listPage${ClassName} = (params?: Record<string, any>) => {
+  return service({
+    method: "get",
+    url: "/${moduleName}/${businessName}/list/page",
+    params: params || {}, // 无参数时传空对象
+  }).then((response) => response.data);
+};
+#elseif($table.tree)
+
+//获取${functionName}列表
+export const listTree${ClassName} = (params?: Record<string, any>) => {
+  return service({
+    method: "get",
+    url: "/${moduleName}/${businessName}/tree",
+    params: params || {}, // 无参数时传空对象
+  }).then((response) => response.data);
+};
+//获取排除本${functionName}的${functionName}树列表（下拉列表使用）
+export const getDoesNotContainSelf${ClassName}TreeSelect = (${pkColumn.javaField}:#if($pkColumn.javaType == "Integer" || $pkColumn.javaType == "Long" || $pkColumn.javaType == "Double" || $pkColumn.javaType == "BigDecimal") number#else string#end = #if($pkColumn.javaType == "Integer" || $pkColumn.javaType == "Long" || $pkColumn.javaType == "Double" || $pkColumn.javaType == "BigDecimal") -1#else ""#end) => {
+  return service({
+    method: "get",
+    url: `/${moduleName}/${businessName}/tree/select/doesNotContainSelf${ClassName}/${${treeCodeColumn.javaField}}`,
+  }).then((response) => response.data);
+};
+#end
+
+// ${functionName}详情
+export const get${ClassName}Detail = (${pkColumn.javaField}: number) => {
+  return service({
+    method: 'get',
+    url: "/${moduleName}/${businessName}/detail",
+    params: {"${pkColumn.javaField}":${pkColumn.javaField}},
+  })
+}
+
+//添加${functionName}
+export const add${ClassName} = (params?: Record<string, any>) => {
+  return service({
+    method: "post",
+    url: "/${moduleName}/${businessName}/add",
+    data: params || {}, // 无参数时传空对象
+  }).then((response) => response.data);
+};
+
+// 编辑${functionName}
+export const modify${ClassName} = (params?: Record<string, any>) => {
+  return service({
+    method: 'post',
+    url: "/${moduleName}/${businessName}/modify",
+    data: params || {}, // 无参数时传空对象
+  }).then((response) => response.data);
+}
+
+//删除${functionName}
+export const delete${ClassName} = (${pkColumn.javaField}s: any) => {
+  return service({
+    method: "delete",
+    url: "/${moduleName}/${businessName}/delete",
+    params: ${pkColumn.javaField}s, // 通过 URL 参数传递（如 /generator/delete?tableId=1）
+  }).then((response) => response.data);
+};

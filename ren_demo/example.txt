@@ -1,0 +1,42 @@
+//该文件用于展示框架内一些常用工具类的使用方法
+
+//**************************************************dateUtils.ts***************************************//
+// 自动导入后将直接使用
+const now = Math.floor(Date.now() / 1000);
+
+// 基本格式化
+console.log(formatTime(now)); 
+// 输出: 2023-10-27 14:30:45
+
+// 自定义格式
+console.log(formatTime(now, 'YY/M/D HH:mm')); 
+// 输出: 23/10/27 14:30
+
+// 相对时间
+const fiveMinutesAgo = now - 300;
+console.log(relativeTime(fiveMinutesAgo)); 
+// 输出: 5分钟前
+
+// 获取当天开始时间
+const todayStart = TimeFormatter.dayBoundary(now);
+console.log(formatToDateTime(todayStart));
+// 输出: 2023-10-27 00:00:00
+
+// 中文格式
+console.log(TimeFormatter.chineseFormat(now, true)); 
+// 输出: 2023年10月27日 14时30分
+
+// 时间段计算
+const start = now - 3600;
+const end = now;
+console.log(TimeFormatter.durationFormat(start, end)); 
+// 输出: 1小时
+
+//**************************************************SVG图标使用的几种方式***************************************//
+// 原生SVG图标（直接通过自定义组件SvgIcon.vue引用），icon-class为图标名称，图标路径在'src/assets/icons'
+<SvgIcon icon-class="user" />
+// ElementPlus内置的Icon图标（第一种：静态图标名加载）（注意格式为i-ep-xxx的样式，该格式是在vite.config.ts中定义别名）（也可以直接使用原生格式）
+<el-icon :size="20"> <i-ep-setting /> </el-icon>
+<el-icon :size="20"> <Setting /> </el-icon>
+// ElementPlus内置的Icon图标（第二种：动态图标名加载）（使用自定义组件安全的加载）（:componentName的值是从数据库中取出来的，格式为i-ep-xxx的样式，该格式是在vite.config.ts中定义别名）（也可以直接使用原生格式）
+<SafeDynamicComponent :componentName="item.icon"/>

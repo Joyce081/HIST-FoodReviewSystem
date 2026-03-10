@@ -1,0 +1,121 @@
+
+.cache-management-container {
+	padding: 20px;
+	height: 100%;
+	background-color: var(--cache-list-bg-color,#edf4fa);
+}
+
+.page-header {
+	margin-bottom: 20px;
+	background: var(--cache-list-page-header-bg-color,linear-gradient(to right, #f0f7ff, #ffffff));
+	border: none;
+}
+
+.page-header h2 {
+	margin: 0;
+	color: var(--cache-list-main-text-color,#303133);
+	font-size: 22px;
+}
+
+.cache-content {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1.2fr;
+	gap: 20px;
+	height: calc(100vh - 120px);
+}
+
+.panel-container {
+	border-radius: 6px;
+	box-shadow: 0 1px 4px var(--cache-list-panel-container-box-shadow-color,rgba(0, 0, 0, 0.08));
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-bottom: 15px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid var(--cache-list-main-border-color,#ebeef5);
+}
+
+.panel-title {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--cache-list-main-text-color,#303133);
+}
+
+.detail-info {
+	padding: 15px 0;
+}
+
+.info-item {
+	display: flex;
+	margin-bottom: 12px;
+	padding-bottom: 12px;
+	border-bottom: 1px dashed var(--cache-list-main-border-color,#ebeef5);
+}
+
+.info-label {
+	width: 90px;
+	font-weight: 500;
+	color: var(--cache-list-secondary-text-color,#606266);
+}
+
+.info-value {
+	flex: 1;
+	color: var(--cache-list-main-text-color,#303133);
+	word-break: break-all;
+}
+
+.content-title {
+	margin: 20px 0 10px;
+	color: var(--cache-list-main-text-color,#303133);
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.content-box {
+	background-color: var(--cache-list-content-box-bg-color,#f8f9fa);
+	border-radius: 6px;
+	padding: 15px;
+	border: 1px solid var(--cache-list-main-border-color,#ebeef5);
+}
+
+.content-code {
+	margin: 0;
+	font-family: "Courier New", monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--cache-list-main-text-color,#303133);
+	max-height: calc(100vh - 420px);
+	overflow: auto;
+	white-space: pre-wrap;
+}
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: calc(100vh - 280px);
+	color: var(--cache-list-secondary-text-color,#606266);
+}
+
+.empty-state .el-icon {
+	font-size: 48px;
+	margin-bottom: 15px;
+	opacity: 0.6;
+}
+
+.empty-state p {
+	margin: 0;
+	font-size: 14px;
+}
+
+.cache-detail {
+	overflow-y: scroll;
+}

@@ -1,0 +1,574 @@
+<template>
+	<div class="search-form-div">
+		<el-form
+			ref="searchFormRef"
+			:rules="rules"
+			:inline="true"
+			:model="tableParams"
+			class="demo-form-inline"
+		>
+			#foreach($column in $subTable.columns)
+			#if($column.query)
+			#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+			#if($column.htmlType == "input")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-input
+					v-model="tableParams.${column.javaField}"
+					placeholder="请输入${column.columnComment}"
+					clearable
+					autocomplete="off"
+				></el-input>
+			</el-form-item>
+			#elseif(($column.htmlType == "select" || $column.htmlType == "radio") && "" != $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-select v-model="tableParams.${column.javaField}" placeholder="请选择${column.columnComment}" value-on-clear="" clearable>
+					<el-option v-for="item in getDict(${column.dictType})" :key="item.dictDataId" :label="item.dictLabel" :value="item.dictValue"/>
+				</el-select>
+			</el-form-item>
+			#elseif(($column.htmlType == "select" || $column.htmlType == "radio") && $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-select v-model="tableParams.${column.javaField}" placeholder="请选择${column.columnComment}" value-on-clear="" clearable>
+					<el-option label="请选择字典生成" value="" />
+				</el-select>
+			</el-form-item>
+			#elseif($column.htmlType == "datetime" && $column.queryType != "BETWEEN")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-date-picker clearable
+					v-model="tableParams.${column.javaField}"
+					type="date"
+					value-format="YYYY-MM-DD"
+					placeholder="请选择${column.columnComment}">
+				</el-date-picker>
+			</el-form-item>
+			#elseif($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+			<el-form-item label="${column.columnComment}" style="width: 308px">
+				<el-date-picker
+					v-model="tableParams.params.daterange${AttrName}"
+					value-format="YYYY-MM-DD"
+					type="daterange"
+					range-separator="-"
+					start-placeholder="开始日期"
+					end-placeholder="结束日期"
+				></el-date-picker>
+			</el-form-item>
+			#end
+			#end
+			#end
+			<el-form-item>
+				<el-button type="primary" @click="handleQuery">搜索</el-button>
+				<el-button @click="handleResetQuery(searchFormRef)">重置</el-button>
+			</el-form-item>
+		</el-form>
+	</div>
+	<el-row :gutter="10" class="mb8">
+		<el-col :span="24">
+			<el-button :type="themeVariables.addBtnElType || 'primary'" plain icon="i-ep-plus" size="large" @click="openAddDialog">添加${subTable.functionName}</el-button>
+		</el-col>
+	</el-row>
+	<el-table border stripe row-key="${pkColumn.javaField}" :data="tableData" class="custom-table" @sort-change="handleTableSort" v-loading="isLoading">
+		#foreach($column in $subTable.columns)
+		#if($column.pk)
+		<el-table-column label="${column.columnComment}" align="center" prop="${column.javaField}" width="100"/>
+		#elseif($column.list && $column.htmlType == "datetime")
+		<el-table-column label="${column.columnComment}" align="center" prop="${column.javaField}" width="180">
+			<template #default="scope">
+				<span>{{formatTime(scope.row.${column.javaField})}}</span>
+			</template>
+		</el-table-column>
+		#elseif($column.list && $column.htmlType == "imageUpload")
+		<el-table-column label="${column.columnComment}" align="center" prop="${column.javaField}" width="100">
+			<template #default="scope">
+				<ImagePreview :src="scope.row.${column.javaField}" width="50" height="50" :is-local="true" />
+			</template>
+		</el-table-column>
+		#elseif($column.list && "" != $column.dictType)
+		<el-table-column label="${column.columnComment}" align="center" prop="${column.javaField}" width="100">
+			<template #default="scope">
+				<template v-for="dict in getDict(${column.dictType})" :key="dict.dictDataId">
+					<el-tag v-if="scope.row.${column.javaField} == dict.dictValue">
+						{{ dict.dictLabel }}
+					</el-tag>
+				</template>
+			</template>
+		</el-table-column>
+		#elseif($column.list && "" != $javaField)
+		<el-table-column label="${column.columnComment}" align="center" prop="${column.javaField}" width="100"/>
+		#end
+		#end
+		<el-table-column fixed="right" label="操作" align="center" width="160">
+			<template #default="scope">
+				<el-button
+					text
+					class="compact-btn"
+					:type="themeVariables.editBtnElType || 'success'"
+					size="small"
+					icon="i-ep-edit"
+					@click="openModifyDialog(scope.$index, scope.row)"
+				>修改</el-button
+				>
+				<el-button
+					text
+					class="compact-btn"
+					:type="themeVariables.deleteBtnElType || 'danger'"
+					size="small"
+					icon="i-ep-delete"
+					@click="handleDelete(scope.$index, scope.row)"
+				>删除</el-button
+				>
+			</template>
+		</el-table-column>
+	</el-table>
+	<Pagination
+		:total="total"
+		v-model:page="tableParams.pageNum"
+		v-model:limit="tableParams.pageSize"
+		@pagination="handleListPage"
+	/>
+	<el-dialog
+		:title="addOrModifyTag == 1 ? '添加${subTable.functionName}' : '修改${subTable.functionName}'"
+		v-model="dialogFormAddOrModify${subClassName}"
+		width="500px"
+	>
+		<el-form :model="addOrModify${subClassName}Form" :rules="addOrModify${subClassName}FormRules" ref="addOrModify${subClassName}FormRef" label-width="80px">
+
+			#foreach($column in $subTable.columns)
+			#if($column.insert && !$column.pk)
+			#if(($column.usableColumn) || (!$column.superColumn))
+			#if($column.htmlType == "input")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-input v-model="addOrModify${subClassName}Form.${column.javaField}" placeholder="请输入${column.columnComment}" />
+			</el-form-item>
+			#elseif($column.htmlType == "imageUpload")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<ImageUpload v-model="addOrModify${subClassName}Form.${column.javaField}"/>
+			</el-form-item>
+			#elseif($column.htmlType == "fileUpload")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<FileUpload v-model="addOrModify${subClassName}Form.${column.javaField}"/>
+			</el-form-item>
+			#elseif($column.htmlType == "editor")
+			<el-form-item label="${column.columnComment}">
+				<Editor v-model="addOrModify${subClassName}Form.${column.javaField}" :min-height="192"/>
+			</el-form-item>
+			#elseif($column.htmlType == "select" && "" != $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-select v-model="addOrModify${subClassName}Form.${column.javaField}" placeholder="请选择${column.columnComment}">
+					<el-option
+						v-for="dict in getDict(${column.dictType})"
+						:key="dict.dictValue"
+						:label="dict.dictLabel"
+						#if($column.javaType == "Integer" || $column.javaType == "Long")
+						:value="parseInt(dict.dictValue)"
+						#else
+						:value="dict.dictValue"
+						#end
+					></el-option>
+				</el-select>
+			</el-form-item>
+			#elseif($column.htmlType == "select" && $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-select v-model="addOrModify${subClassName}Form.${column.javaField}" placeholder="请选择${column.columnComment}">
+					<el-option label="请选择字典生成" value="" />
+				</el-select>
+			</el-form-item>
+			#elseif($column.htmlType == "checkbox" && "" != $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-checkbox-group v-model="addOrModify${subClassName}Form.${column.javaField}">
+					<el-checkbox
+						v-for="dict in getDict(${column.dictType}"
+						:key="dict.dictValue"
+						:label="dict.dictValue">
+						{{dict.dictLabel}}
+					</el-checkbox>
+				</el-checkbox-group>
+			</el-form-item>
+			#elseif($column.htmlType == "checkbox" && $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-checkbox-group v-model="addOrModify${subClassName}Form.${column.javaField}">
+					<el-checkbox>请选择字典生成</el-checkbox>
+				</el-checkbox-group>
+			</el-form-item>
+			#elseif($column.htmlType == "radio" && "" != $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-radio-group v-model="addOrModify${subClassName}Form.${column.javaField}">
+					<el-radio
+						v-for="dict in getDict(${column.dictType}"
+						:key="dict.dictValue"
+						#if($column.javaType == "Integer" || $column.javaType == "Long")
+						:label="parseInt(dict.dictValue)"
+						#else
+						:label="dict.dictValue"
+						#end
+					>{{dict.dictLabel}}</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			#elseif($column.htmlType == "radio" && $column.dictType)
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-radio-group v-model="addOrModify${subClassName}Form.${column.javaField}">
+					<el-radio label="-1">请选择字典生成</el-radio>
+				</el-radio-group>
+			</el-form-item>
+			#elseif($column.htmlType == "datetime")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-date-picker clearable
+					v-model="addOrModify${subClassName}Form.${column.javaField}"
+					type="date"
+					value-format="YYYY-MM-DD"
+					placeholder="请选择${column.columnComment}">
+				</el-date-picker>
+			</el-form-item>
+			#elseif($column.htmlType == "textarea")
+			<el-form-item label="${column.columnComment}" prop="${column.javaField}">
+				<el-input v-model="addOrModify${subClassName}Form.${column.javaField}" type="textarea" placeholder="请输入内容" />
+			</el-form-item>
+			#end
+			#end
+			#end
+			#end
+		</el-form>
+		<template #footer>
+			<span class="dialog-footer">
+				<el-button @click="closeAddOrModifyDialog">取 消</el-button>
+				<el-button type="primary" @click="handleAddOrModify(addOrModify${subClassName}FormRef)">
+					确 定
+				</el-button>
+			</span>
+		</template>
+	</el-dialog>
+</template>
+
+<script setup lang="ts" name="${subclassName}">
+	#foreach($column in $subTable.columns)
+	#if($column.list && $column.htmlType == "datetime")
+	import { formatTime } from "@/utils/dateUtils";
+	#break
+	#end
+	#end
+	import type { FormInstance, FormRules } from "element-plus";
+	import { listPage${subClassName}, add${subClassName}, modify${subClassName}, delete${subClassName} } from "@/api/${moduleName}/${businessName}-sub";
+	import { useTheme } from '@/composables/useTheme';
+	/*============================通用参数开始============================*/
+	//路由对象，用于获取当前路由信息（参数/查询字符串）等
+	const route = useRoute()
+	#foreach($column in $subTable.columns)
+	#if($column.list && "" != $column.dictType)
+	// 初始化字典类型为${subDictTypes}的字典数据
+	const { getDict } = useDict([${subDictTypes}])
+	#break
+	#end
+	#end
+	//表格数据
+	const tableData = ref([]);
+	//查询参数类
+	interface TableParams {
+		pageNum?: number;
+		pageSize?: number;
+		orderByColumn?: string;
+		orderByWay?: string;
+		#foreach($column in $subTable.columns)
+		#if(($column.usableColumn) || (!$column.superColumn))
+		#if($column.javaType == "Integer" || $column.javaType == "Long")
+		${column.javaField}: number,
+		#elseif($column.javaType == "Double" || $column.javaType == "BigDecimal")
+		${column.javaField}: number,
+		#else
+		${column.javaField}: string,
+		#end
+		#end
+		#end
+		#foreach ($column in $columns)
+		#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+		//其它参数
+		params: {
+			#foreach ($column in $subTable.columns)
+			#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+			#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+			begin${AttrName}?: string,
+			end${AttrName}?: string,
+			#end
+			#end
+		};
+		#break
+		#end
+		#end
+	}
+	//查询参数
+	const tableParams = ref<TableParams>({
+		//当前页
+		pageNum: 1,
+		//每页显示多少条
+		pageSize: 10,
+		//排序字段
+		orderByColumn: "",
+		//排序方式
+		orderByWay: "",
+		#foreach($column in $subTable.columns)
+		#if(($column.usableColumn) || (!$column.superColumn))
+		#if($column.javaType == "Integer" || $column.javaType == "Long")
+		${column.javaField}: 0,
+		#elseif($column.javaType == "Double" || $column.javaType == "BigDecimal")
+		${column.javaField}: 0.0,
+		#else
+		${column.javaField}: "",
+		#end
+		#end
+		#end
+		#foreach ($column in $columns)
+		#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+		//其它参数
+		params: {
+			#foreach ($column in $subTable.columns)
+			#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+			#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+			begin${AttrName} : "",
+			end${AttrName} : "",
+			#end
+			#end
+		},
+		#break
+		#end
+		#end
+	});
+	//时间段参数
+	#foreach ($column in $subTable.columns)
+	#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+	#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+	const daterange${AttrName} = ref([])
+	#end
+	#end
+	//查询表单
+	const searchFormRef = ref<FormInstance>();
+	//表单验证规则（即使用不到，为了重置方法，也需要写）
+	const rules = reactive<FormRules<TableParams>>({});
+	//添加或修改(1添加，2修改)
+	const addOrModifyTag = ref(1);
+	//总数据数量
+	const total = ref(0);
+	//总页数
+	const totalPage = ref(1);
+	// 主题变量
+	const { themeVariables } = useTheme();
+	//是否加载中
+	const isLoading = ref(true);
+	/*============================通用参数结束============================*/
+
+	/*============================页面方法开始============================*/
+	//获取列表
+	const handleListPage = async () => {
+		isLoading.value = true;
+		const ${subTableFkColumn.javaField} = route.query?.${subTableFkColumn.javaField}
+		if (!${subTableFkColumn.javaField}) return
+
+		//TODO 请按照外键类型进行参数转换，这里默认按照数字类型转换
+		tableParams.value.${subTableFkColumn.javaField} = Number(${subTableFkColumn.javaField})
+
+		#foreach ($column in $subTable.columns)
+		#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+		#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+		if (null != daterange${AttrName} && '' != daterange${AttrName}) {
+			tableParams.value.params["begin${AttrName}"] = daterange${AttrName}.value[0]
+			tableParams.value.params["end${AttrName}"] = daterange${AttrName}.value[1]
+		}
+		#end
+		#end
+		try {
+			const result = await listPage${subClassName}(tableParams.value);
+			if (result.code == 200) {
+				tableData.value = result.rows;
+				tableParams.value.pageNum = result.pageNum;
+				tableParams.value.pageSize = result.pageSize;
+				total.value = result.total;
+				totalPage.value = result.totalPage;
+			} else {
+				ElMessage.error(result.msg);
+			}
+		} finally {
+			isLoading.value = false;
+		}
+	};
+	//页面搜索方法
+	const handleQuery = async () => {
+		isLoading.value = true;
+		tableParams.value.pageNum = 1;
+		handleListPage();
+	};
+	//重置
+	const handleResetQuery = (formEl: FormInstance | undefined) => {
+		if (!formEl) return;
+		#foreach ($column in $subTable.columns)
+		#if($column.htmlType == "datetime" && $column.queryType == "BETWEEN")
+		#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+		daterange${AttrName}.value = []
+		#end
+		#end
+		formEl.resetFields();
+	};
+	/*********添加修改${subTable.functionName}*********/
+	//弹出框是否显示
+	const dialogFormAddOrModify${subClassName} = ref(false);
+	//添加${subTable.functionName}表单初始值
+	const initialAddOrModify${subClassName}Form = {
+		#foreach($column in $subTable.columns)
+		#if(($column.usableColumn) || (!$column.superColumn))
+		//${column.columnComment}
+		#if($column.javaType == "Integer" || $column.javaType == "Long")
+		${column.javaField}: 0,
+		#elseif($column.javaType == "Double" || $column.javaType == "BigDecimal")
+		${column.javaField}: 0.0,
+		#else
+		${column.javaField}: "",
+		#end
+		#end
+		#end
+	};
+	//添加${subTable.functionName}表单对象
+	const addOrModify${subClassName}Form = ref({ ...initialAddOrModify${subClassName}Form });
+	//添加${subTable.functionName}表单对象
+	const addOrModify${subClassName}FormRef = ref<FormInstance>();
+	//添加${subTable.functionName}表单验证规则
+	const addOrModify${subClassName}FormRules = reactive<FormRules>({
+		#foreach($column in $subTable.columns)
+		#if($column.required)
+		$column.javaField: [
+		{ required: true, message: "$column.columnComment不能为空", trigger: #if($column.htmlType == "select" || $column.htmlType == "radio")"change"#else"blur"#end }
+		]#if($foreach.count != $subTable.columns.size()),#end
+		#end
+		#end
+	});
+
+	//打开添加弹框
+	const openAddDialog = async () => {
+		//弹出框设置为添加弹框
+		addOrModifyTag.value = 1;
+		//表单值恢复为初始值
+		addOrModify${subClassName}Form.value = { ...initialAddOrModify${subClassName}Form };
+		//清除验证状态
+		addOrModify${subClassName}FormRef.value?.clearValidate();
+		//添加表单的主键设置为0
+		addOrModify${subClassName}Form.value.${subTablePkColumn.javaField} = 0;
+		//显示弹出框
+		dialogFormAddOrModify${subClassName}.value = true;
+	};
+	//打开修改弹框
+	const openModifyDialog = async (index: number, row: any) => {
+		//弹出框设置为修改弹框
+		addOrModifyTag.value = 2;
+		//表单值恢复为初始值
+		addOrModify${subClassName}Form.value = { ...initialAddOrModify${subClassName}Form };
+		//清除验证状态
+		addOrModify${subClassName}FormRef.value?.clearValidate();
+		//显示弹出框
+		dialogFormAddOrModify${subClassName}.value = true;
+		//设置弹出框中相关值
+		#foreach($column in $subTable.columns)
+		#if(($column.usableColumn) || (!$column.superColumn))
+		addOrModify${subClassName}Form.value.${column.javaField} = row.${column.javaField};
+		#end
+		#end
+	};
+	//实现添加或修改
+	const handleAddOrModify = async (formEl: FormInstance | undefined) => {
+		if (!formEl) return;
+		await formEl.validate(async (valid) => {
+			if (valid) {
+				//调用添加或修改方法
+				if (addOrModifyTag.value == 1) {
+					const result = await add${subClassName}(addOrModify${subClassName}Form.value);
+					if (result.code == 200) {
+						ElMessage({
+							message: "添加成功",
+							type: "success",
+						});
+						//关闭弹框
+						dialogFormAddOrModify${subClassName}.value = false;
+						//表单值恢复为初始值
+						addOrModify${subClassName}Form.value = { ...initialAddOrModify${subClassName}Form };
+						//重新加载表单
+						handleQuery();
+					} else {
+						ElMessage.error(result.msg);
+					}
+				} else {
+					const result = await modify${subClassName}(addOrModify${subClassName}Form.value);
+					if (result.code == 200) {
+						ElMessage({
+							message: "修改成功",
+							type: "success",
+						});
+						//关闭弹框
+						dialogFormAddOrModify${subClassName}.value = false;
+						//表单值恢复为初始值
+						addOrModify${subClassName}Form.value = { ...initialAddOrModify${subClassName}Form };
+						//重新加载表单
+						handleQuery();
+					} else {
+						ElMessage.error(result.msg);
+					}
+				}
+			}
+		});
+	};
+	//取消弹框
+	const closeAddOrModifyDialog = async () => {
+		//关闭弹框
+		dialogFormAddOrModify${subClassName}.value = false;
+		//表单值恢复为初始值
+		addOrModify${subClassName}Form.value = { ...initialAddOrModify${subClassName}Form };
+	};
+	/*********删除${subTable.functionName}*********/
+	const handleDelete = async (index: number, row: any) => {
+		//调用删除方法
+		try {
+			const result = await delete${subClassName}({${subTablePkColumn.javaField}s : row.${subTablePkColumn.javaField}});
+			if (result.code == 200) {
+				ElMessage({
+					message: "删除成功",
+					type: "success",
+				});
+				//重新加载表单
+				handleQuery();
+			} else {
+				ElMessage.error(result.msg);
+			}
+		} catch {
+			ElMessage.error("删除失败");
+		}
+	};
+	/*********排序相关*********/
+    // 定义前端字段名到数据库字段名的映射
+    // 注意，这里只需要定义前端页面与数据库字段名不相同的场景，如数据库名为login_date,而前端页面字段名为loginDateStr
+    // 但是，如果仅仅是驼峰与下划线命名不同，可以不定义，如数据库为login_date，而前端页面字段名为loginDate
+    // 如果不同且未定义，可能会导致查询失败
+	const sortFieldMap = {};
+	const handleTableSort = (params: {
+		column: any;
+		prop: keyof typeof sortFieldMap; // 告诉ts，从prop中取出来的值，一定是sortFieldMap的键
+		order: string;
+	}) => {
+		// 参数说明：
+		// - column: 当前列的配置对象
+		// - prop: 排序的字段名（对应列的 prop）
+		// - order: 排序方式（'ascending' 升序 / 'descending' 降序 / null 默认）
+
+		const orderByColumn = sortFieldMap[params.prop] || params.prop;
+		const orderByWay = params.order == null ? "" : params.order == "ascending" ? "asc" : "desc";
+
+		if (orderByColumn != undefined && orderByWay != "") {
+			tableParams.value.orderByColumn = orderByColumn;
+			tableParams.value.orderByWay = orderByWay;
+		} else {
+			tableParams.value.orderByColumn = "";
+			tableParams.value.orderByWay = "";
+		}
+		handleQuery();
+	};
+	/*============================页面方法结束============================*/
+
+	/*============================生命周期钩子开始============================*/
+	// 组件加载完成后执行
+	// 初始化表格数据
+	onMounted(async () => {
+		handleQuery();
+	});
+	/*============================生命周期钩子结束============================*/
+</script>
